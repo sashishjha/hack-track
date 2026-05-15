@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Search } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -84,6 +84,7 @@ const hoverShadowClass: Record<Hackathon["hoverShadow"], string> = {
 function Index() {
   const [activeFilter, setActiveFilter] = useState(filters[0]);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const chipClass = (filter: string) =>
     activeFilter === filter
@@ -135,6 +136,8 @@ function Index() {
         <div className="relative max-w-xl mx-auto">
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by tech stack or prize..."
             className="w-full bg-card border-2 border-foreground px-4 sm:px-6 py-3 sm:py-4 pr-20 sm:pr-24 text-sm sm:text-base rounded-xl shadow-[4px_4px_0px_0px_var(--foreground)] focus:shadow-[8px_8px_0px_0px_var(--primary)] outline-none transition-all placeholder:text-muted-foreground/60"
           />
@@ -173,12 +176,27 @@ function Index() {
           <DrawerContent className="bg-background border-t-2 border-foreground">
             <DrawerHeader className="text-left">
               <DrawerTitle className="font-display text-3xl tracking-wide">
-                Filter Platforms
+                Refine Posters
               </DrawerTitle>
               <DrawerDescription className="font-mono text-[11px] uppercase tracking-widest">
-                Pick a source to refine the grid
+                Search and pick a source
               </DrawerDescription>
             </DrawerHeader>
+            <div className="px-4 pb-3">
+              <div className="relative">
+                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by tech stack or prize..."
+                  className="w-full bg-card border-2 border-foreground pl-9 pr-3 py-3 text-sm rounded-xl shadow-[3px_3px_0px_0px_var(--foreground)] outline-none placeholder:text-muted-foreground/60"
+                />
+              </div>
+            </div>
+            <p className="px-4 pb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Platform
+            </p>
             <div className="px-4 pb-2 flex flex-wrap gap-2">
               {filters.map((filter) => (
                 <button
