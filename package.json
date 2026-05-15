@@ -1,0 +1,30 @@
+{
+  "name": "hackathon-tracker",
+  "version": "1.0.0",
+  "description": "Live hackathon tracker with real-time updates from multiple platforms",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "fetch": "node backend/scraper.js"
+  },
+  "keywords": [
+    "hackathon",
+    "competition",
+    "tracker",
+    "live",
+    "remote"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
