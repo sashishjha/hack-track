@@ -1,4 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+  DrawerClose,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import cardBirds from "@/assets/card-birds.jpg";
 import cardCities from "@/assets/card-cities.jpg";
 import cardRobot from "@/assets/card-robot.jpg";
@@ -70,6 +82,14 @@ const hoverShadowClass: Record<Hackathon["hoverShadow"], string> = {
 };
 
 function Index() {
+  const [activeFilter, setActiveFilter] = useState(filters[0]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const chipClass = (filter: string) =>
+    activeFilter === filter
+      ? "px-3 sm:px-5 py-1.5 sm:py-2 bg-primary text-primary-foreground font-mono text-[10px] sm:text-xs uppercase rounded-full shadow-sm hover:scale-105 transition-transform"
+      : "px-3 sm:px-5 py-1.5 sm:py-2 bg-card border border-border text-foreground font-mono text-[10px] sm:text-xs uppercase rounded-full hover:border-primary transition-colors";
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       {/* Navigation */}
@@ -124,20 +144,64 @@ function Index() {
         </div>
       </header>
 
-      {/* Filters */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 sm:mb-12 flex flex-wrap gap-2 sm:gap-3 justify-center animate-in">
-        {filters.map((filter, i) => (
+      {/* Filters — desktop/tablet inline */}
+      <section className="hidden sm:flex max-w-7xl mx-auto px-4 sm:px-6 mb-10 sm:mb-12 flex-wrap gap-2 sm:gap-3 justify-center animate-in">
+        {filters.map((filter) => (
           <button
             key={filter}
-            className={
-              i === 0
-                ? "px-3 sm:px-5 py-1.5 sm:py-2 bg-primary text-primary-foreground font-mono text-[10px] sm:text-xs uppercase rounded-full shadow-sm hover:scale-105 transition-transform"
-                : "px-3 sm:px-5 py-1.5 sm:py-2 bg-card border border-border text-foreground font-mono text-[10px] sm:text-xs uppercase rounded-full hover:border-primary transition-colors"
-            }
+            onClick={() => setActiveFilter(filter)}
+            className={chipClass(filter)}
           >
             {filter}
           </button>
         ))}
+      </section>
+
+      {/* Filters — mobile trigger */}
+      <section className="sm:hidden max-w-7xl mx-auto px-4 mb-8 flex items-center justify-between gap-3 animate-in">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          Filter:{" "}
+          <span className="text-foreground font-bold normal-case">{activeFilter}</span>
+        </p>
+        <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <DrawerTrigger asChild>
+            <button className="inline-flex items-center gap-2 bg-foreground text-background font-mono text-[11px] uppercase px-4 py-2 rounded-full">
+              <SlidersHorizontal className="size-3.5" />
+              Filters
+            </button>
+          </DrawerTrigger>
+          <DrawerContent className="bg-background border-t-2 border-foreground">
+            <DrawerHeader className="text-left">
+              <DrawerTitle className="font-display text-3xl tracking-wide">
+                Filter Platforms
+              </DrawerTitle>
+              <DrawerDescription className="font-mono text-[11px] uppercase tracking-widest">
+                Pick a source to refine the grid
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="px-4 pb-2 flex flex-wrap gap-2">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => {
+                    setActiveFilter(filter);
+                    setDrawerOpen(false);
+                  }}
+                  className={chipClass(filter)}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <button className="w-full bg-foreground text-background font-mono text-xs uppercase py-3 rounded-full">
+                  Done
+                </button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </section>
 
       {/* Grid */}
