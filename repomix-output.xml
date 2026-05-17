@@ -43,32 +43,1311 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+already-done-job/
+  CHANGELOG.md
+  HANDOFF.md
+  PROMPT_FOR_NEW_AI.md
 backend/
+  adapters/
+    base.js
+    devpost.js
+    kaggle.js
+  discovery/
+    llm_extractor.js
+    search_crawler.js
   routes/
     hackathons.js
-  scraper.js
   server.js
-data/
-  hackathons.json
-public/
-  js/
-    api.js
-    filters.js
-    main.js
-  index.html
+src/
+  components/
+    CompetitionCard.tsx
+    CountdownCards.tsx
+    FilterBar.tsx
+    HeroSection.tsx
+    HiddenGems.tsx
+  data/
+    competitions-part2.ts
+    competitions-part3.ts
+    competitions-part4.ts
+    competitions.ts
+    index.ts
+  lib/
+    constants.ts
+    types.ts
+    utils.ts
+  routes/
+    __root.tsx
+    index.tsx
+  router.tsx
+  routeTree.gen.ts
+  server.ts
+  start.ts
+  styles.css
 .env.example
 .gitignore
-ARCHITECTURE.md
-CHECKLIST.md
+.prettierignore
+.prettierrc
+eslint.config.js
 package.json
-PROJECT_SUMMARY.txt
 README.md
-SETUP.md
-START_HERE.md
+tsconfig.json
+vite.config.mts
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="already-done-job/CHANGELOG.md">
+# HackTrack — Changelog
+
+All notable work completed on this project, in chronological order.
+
+---
+
+## Session 1 (May 16, 2026 — Morning)
+**AI Used:** Gemini (via Google Antigravity IDE)
+
+### What was done:
+1. **Analyzed the original prototype** — A vanilla JS (public/index.html) hackathon tracker with a Node.js/Express backend. It had a beautiful dark hacker aesthetic but was static with only 3 sample hackathons.
+2. **Designed the new architecture** — Decided to keep the dark theme but migrate to React + TanStack Router for scalability. Chose Tailwind v4 for styling.
+3. **Created the type system** (`src/lib/types.ts`) — 25+ field Competition interface with intelligence scores (rarity, trust), categorization (skill domains, career outcomes), and metadata.
+4. **Created constants** (`src/lib/constants.ts`) — Full taxonomy with 50+ platform registry, all valid enum values.
+5. **Seeded 90 competitions** across 3 files (`src/data/competitions*.ts`) — Covering 2026-specific, daily, weekly, monthly, annual, and always-open categories.
+6. **Built 5 React components**:
+   - `CompetitionCard.tsx` — Rich card with live countdown, category-colored badges
+   - `FilterBar.tsx` — Multi-dimensional filter (platform, skill, difficulty, effort, AI policy)
+   - `HeroSection.tsx` — Premium hero with live stats
+   - `CountdownCards.tsx` — Urgent deadline section
+   - `HiddenGems.tsx` — High-rarity competition showcase
+7. **Built the homepage** (`src/routes/index.tsx`) — Nav + Hero + Countdowns + Hidden Gems + Filter + Card Grid + Footer
+8. **Updated root layout** (`src/routes/__root.tsx`) — Meta tags, IBM Plex Mono + Syne fonts
+9. **Implemented styles** (`src/styles.css`) — Dark hacker theme with grid overlay, glassmorphism, badge system
+10. **Built backend adapters** — BaseAdapter class, Devpost adapter, Kaggle adapter
+
+### Blockers encountered:
+- `EPERM` port permission issue prevented testing `npm run dev` locally
+
+---
+
+## Session 2 (May 16, 2026 — Afternoon/Evening)
+**AI Used:** Gemini (via Google Antigravity IDE)
+
+### What was done:
+1. **User provided 101-competition master list** in `extra_competitions.txt` (34KB)
+2. **Parsed the list and added 5 remaining unique entries** → `src/data/competitions-part4.ts` (IDs 91–95: HackerRank, Startup Grants India, Where U Elevate, Halite, MLH Discord)
+3. **Built the AI Web Discovery Engine** (zero-cost):
+   - `backend/discovery/search_crawler.js` — DuckDuckGo HTML scraping for trending hackathon URLs
+   - `backend/discovery/llm_extractor.js` — Google Gemini 1.5 Flash to extract competition data from raw page text
+4. **Set up cron scheduling** — node-cron in server.js, daily at midnight
+5. **Created manual trigger** — `POST /api/discover` endpoint
+6. **Production build verified** — `npm run build` passes with zero errors
+
+---
+
+## Session 3 (May 17, 2026)
+**AI Used:** Claude Opus 4.6 (via Google Antigravity IDE)
+
+### What was done:
+1. **Major cleanup** — Removed all unnecessary files accumulated from multiple tools:
+   - **Deleted**: `.lovable/` directory (Lovable IDE configs, plan.md)
+   - **Deleted**: `.wrangler/` (Cloudflare deploy artifacts)
+   - **Deleted**: `dist/` (stale build output)
+   - **Deleted**: 46 unused shadcn/Radix UI components (`src/components/ui/`)
+   - **Deleted**: `src/hooks/use-mobile.tsx` (unused)
+   - **Deleted**: `src/integrations/supabase/` (5 files — unused Supabase auth/client)
+   - **Deleted**: `src/assets/` (3 placeholder images from Lovable)
+   - **Deleted**: `src/lib/error-capture.ts`, `src/lib/error-page.ts` (unused)
+   - **Deleted**: `src/lib/extra_competitions.txt` (already parsed into code)
+   - **Deleted**: `public/index.html` (69KB vanilla JS prototype — aesthetics already in React)
+   - **Deleted**: `public/js/` (api.js, main.js, filters.js — legacy vanilla JS)
+   - **Deleted**: `data/hackathons.json` (legacy 3-item sample data)
+   - **Deleted**: `backend/scraper.js` (legacy scraper, replaced by adapters + discovery)
+   - **Deleted**: `backend/.env.example` (duplicate)
+   - **Deleted**: `supabase/` directory (config.toml)
+   - **Deleted**: `components.json` (shadcn config)
+   - **Deleted**: 5 legacy doc files: `CHECKLIST.md`, `PROJECT_SUMMARY.txt`, `SETUP.md`, `START_HERE.md`, `ARCHITECTURE.md`
+   - **Deleted**: `repomix-output.xml` (132KB code dump)
+   - **Deleted**: `bun.lock`, `bunfig.toml`, `wrangler.jsonc` (Bun/Cloudflare configs)
+   - **Deleted**: `.gitignore.merge-backup`, `package.json.merge-backup`
+2. **Cleaned package.json** — Removed 30+ unused dependencies (all @radix-ui/*, @supabase/*, @hookform/*, cmdk, embla-carousel, input-otp, react-day-picker, react-hook-form, react-resizable-panels, recharts, sonner, vaul, zod, tw-animate-css, @lovable.dev/*). Added @google/generative-ai and node-cron.
+3. **Cleaned .env** — Removed Supabase keys, added Gemini API key placeholder.
+4. **Cleaned backend/server.js** — Removed static file serving and root route (React handles its own frontend).
+5. **Created `already-done-job/` folder** with comprehensive handoff documentation.
+
+### Files removed: ~80+
+### Dependencies removed from package.json: ~30
+### Final project file count: 38 files (down from 120+)
+</file>
+
+<file path="already-done-job/HANDOFF.md">
+# HackTrack — Project Handoff Document
+## Global Competition Intelligence Platform
+
+**Author:** S.J.  
+**Date:** May 17, 2026  
+**Version:** 2.0  
+
+---
+
+## 1. WHAT THIS PROJECT IS
+
+HackTrack is a live, automated platform that tracks **95+ hackathons, competitions, bounty platforms, and coding contests** across the internet. It has:
+
+- A **React + TanStack Router frontend** with a dark hacker aesthetic (IBM Plex Mono, Syne fonts, green-on-dark theme).
+- A **Node.js/Express backend** with platform-specific scrapers (Devpost, Kaggle) and a generalized AI-powered web discovery engine that uses the free Google Gemini API + DuckDuckGo to find brand new hackathons automatically.
+- A **typed seed database** of 95 competitions across 15 categories (2026-specific, daily, weekly, monthly, annual, always-open).
+
+---
+
+## 2. TECH STACK
+
+| Layer | Technology | Notes |
+|-------|------------|-------|
+| Frontend Framework | React 19 + TanStack Router + TanStack Start | File-based routing in `src/routes/` |
+| Styling | Tailwind CSS v4 + custom CSS vars | Dark theme in `src/styles.css` |
+| Build Tool | Vite 7 | Config in `vite.config.ts` |
+| Backend | Node.js + Express | `backend/server.js` |
+| Scraping | Axios + Cheerio | `backend/adapters/` |
+| AI Discovery | Google Gemini 1.5 Flash (free tier) | `backend/discovery/llm_extractor.js` |
+| Web Search | DuckDuckGo HTML scraping (free) | `backend/discovery/search_crawler.js` |
+| Scheduling | node-cron | Runs daily at midnight |
+| Language | TypeScript (frontend), JavaScript (backend) | |
+| Deployment target | Vite → Cloudflare Workers (frontend), Express → Railway/Render (backend) | |
+
+---
+
+## 3. PROJECT STRUCTURE
+
+```
+Hackathon-tracker/
+├── backend/                          # Node.js backend (Express API)
+│   ├── server.js                     # Express app + cron scheduler
+│   ├── routes/
+│   │   └── hackathons.js             # REST API: GET/POST/DELETE /api/hackathons
+│   ├── adapters/                     # Platform-specific scrapers
+│   │   ├── base.js                   # BaseAdapter class (retry, parsing helpers)
+│   │   ├── devpost.js                # Devpost JSON API adapter
+│   │   └── kaggle.js                 # Kaggle REST API adapter
+│   └── discovery/                    # AI Web Discovery Engine
+│       ├── search_crawler.js         # DuckDuckGo searcher + URL extractor
+│       └── llm_extractor.js          # Gemini API: raw HTML → Competition JSON
+│
+├── src/                              # React frontend (TypeScript)
+│   ├── routes/                       # TanStack file-based routes
+│   │   ├── __root.tsx                # Root layout (meta tags, fonts, shell)
+│   │   └── index.tsx                 # Homepage (hero, filters, cards grid)
+│   ├── components/                   # UI components
+│   │   ├── CompetitionCard.tsx       # Rich card with countdown, badges, intel
+│   │   ├── FilterBar.tsx             # Multi-dimensional filter bar
+│   │   ├── HeroSection.tsx           # Premium hero with stats
+│   │   ├── CountdownCards.tsx        # Deadline countdown section
+│   │   └── HiddenGems.tsx            # High-rarity competition showcase
+│   ├── data/                         # Seed database (95 competitions)
+│   │   ├── competitions.ts           # IDs 1–20:  2026-specific + daily
+│   │   ├── competitions-part2.ts     # IDs 21–40: weekly + monthly
+│   │   ├── competitions-part3.ts     # IDs 41–90: annual + always-open
+│   │   ├── competitions-part4.ts     # IDs 91–95: remaining aggregators
+│   │   └── index.ts                  # Master merge + filter/sort utilities
+│   ├── lib/                          # Shared types and constants
+│   │   ├── types.ts                  # 25+ field Competition interface
+│   │   ├── constants.ts              # Taxonomies, platform registry, defaults
+│   │   └── utils.ts                  # Tailwind merge utility
+│   ├── styles.css                    # Global dark theme + design tokens
+│   ├── router.tsx                    # TanStack router setup
+│   ├── routeTree.gen.ts              # Auto-generated route tree
+│   ├── server.ts                     # TanStack Start server entry
+│   └── start.ts                      # Client entry point
+│
+├── .env                              # Environment vars (GEMINI_API_KEY)
+├── .env.example                      # Template for .env
+├── package.json                      # Dependencies and scripts
+├── tsconfig.json                     # TypeScript config
+├── vite.config.ts                    # Vite build config
+└── eslint.config.js                  # Linting
+```
+
+---
+
+## 4. THE COMPETITION DATA SCHEMA
+
+Every competition in `src/data/` follows this TypeScript interface (defined in `src/lib/types.ts`):
+
+```typescript
+interface Competition {
+  id: string;
+  slug: string;
+  title: string;
+  platform: string;
+  organizer: string;
+  description: string;
+  url: string;
+  status: 'open' | 'upcoming' | 'closed' | 'archived' | 'unknown';
+  registrationStatus: 'open' | 'closed' | 'waitlist' | 'unknown';
+  submissionDeadline?: string;        // ISO-8601
+  startDate?: string;
+  endDate?: string;
+  prizePoolUsd?: number;
+  prizeDisplay: string;
+  participantsEstimate?: string;
+  teamSizeMin: number;
+  teamSizeMax: number;
+  skillDomains: SkillDomain[];        // e.g. ['ai_ml', 'robotics']
+  careerOutcomes: CareerOutcome[];    // e.g. ['cash', 'recruitment_pipeline']
+  effortLevel: EffortLevel;           // '2h_sprint' | 'weekend' | 'multi_month' etc.
+  difficulty: DifficultyLevel;        // 'beginner' | 'intermediate' | 'advanced' | 'elite' | 'research'
+  competitionDensity: CompetitionDensity; // 'very_low' .. 'overcrowded'
+  recurrenceCategory: RecurrenceCategory;
+  aiPolicy: AIPolicy;                 // 'no_ai' | 'allowed' | 'ai_core' | 'open_model'
+  apiCreditsIncluded: boolean;
+  gpuCreditsIncluded: boolean;
+  mode: 'remote' | 'hybrid' | 'in_person';
+  studentOnly: boolean;
+  teamType: 'individual' | 'team' | 'both';
+  hardwareRequired: boolean;
+  tags: string[];
+  recurrence: string;
+  validity: 'active' | 'historical';
+  rarityScore?: number;               // 1–10 (10 = extreme hidden gem)
+  trustScore?: number;
+  recruiterVisibility?: number;
+  resumeValue?: number;
+  beginnerFriendlyScore?: number;
+  countryRestrictions?: string[];
+}
+```
+
+---
+
+## 5. WHAT HAS BEEN COMPLETED
+
+### Phase 1: Foundation (DONE ✅)
+- [x] Designed the 25+ field Competition type schema
+- [x] Created constants/taxonomies with 50+ platform registry
+- [x] Seeded 95 competitions across 4 data files (Part 1–4)
+- [x] Built the dark hacker aesthetic (IBM Plex Mono + Syne fonts, green accents, grid overlay)
+- [x] Built 5 React components: CompetitionCard, FilterBar, HeroSection, CountdownCards, HiddenGems
+- [x] Assembled responsive homepage with nav, hero, filters, card grid, footer
+- [x] Implemented multi-dimensional client-side filtering and sorting
+- [x] Production build passes with zero TypeScript errors
+
+### Phase 2: Live Engine (DONE ✅)
+- [x] Built BaseAdapter class for platform-specific scrapers
+- [x] Built Devpost adapter (JSON API, pagination, domain extraction)
+- [x] Built Kaggle adapter (REST API)
+- [x] Built AI Web Discovery Engine (DuckDuckGo search → Gemini extraction)
+- [x] Set up node-cron daily job for automated discovery
+- [x] Created manual trigger endpoint: `POST /api/discover`
+- [x] Cleaned project: removed 46 unused shadcn/UI components, Lovable configs, legacy vanilla JS frontend, Supabase integration, repomix dump
+
+---
+
+## 6. WHAT STILL NEEDS TO BE DONE
+
+### Immediate Priority
+1. **Install dependencies**: Run `npm install` (the node_modules may be stale after cleanup)
+2. **Get free Gemini API key**: Go to https://aistudio.google.com/app/apikey → paste into `.env`
+3. **Test frontend**: `npm run dev:frontend` → visit localhost
+4. **Test backend**: `npm run dev:backend` → hit `POST http://localhost:5001/api/discover`
+
+### Phase 3: Database Integration
+- [ ] Set up Supabase (or any PostgreSQL) and run migration
+- [ ] Replace the static `src/data/` imports with API calls to the backend
+- [ ] Backend should persist discovered hackathons to the database
+- [ ] Frontend should fetch from `/api/hackathons` instead of importing static TypeScript arrays
+
+### Phase 4: Detail Pages & Polish
+- [ ] Implement `src/routes/competition.$slug.tsx` (competition detail page)
+- [ ] Add bookmarking / favorites functionality
+- [ ] Add calendar view (FullCalendar or similar)
+- [ ] Build admin panel for manual competition entry
+- [ ] Add email/push notification for deadline reminders
+
+### Phase 5: Deployment
+- [ ] Deploy frontend to Vercel or Cloudflare Pages
+- [ ] Deploy backend to Railway or Render
+- [ ] Set up CI/CD for automated deploys on push
+- [ ] Configure production cron jobs
+
+### Phase 6: Mobile App
+- [ ] Convert to React Native or build a PWA
+- [ ] Push notification support
+
+---
+
+## 7. HOW TO RUN LOCALLY
+
+```bash
+# Terminal 1: Frontend
+cd ~/Downloads/Hackathon-tracker
+npm install
+npm run dev:frontend
+# Opens at http://localhost:5173
+
+# Terminal 2: Backend
+npm run dev:backend
+# API at http://localhost:5001
+
+# Or run both together:
+npm run dev
+```
+
+---
+
+## 8. KEY DESIGN DECISIONS
+
+1. **Why React + TanStack instead of Vanilla JS?** — The original prototype was vanilla JS. We migrated to React for scalability, type safety, and component reuse. TanStack Router gives file-based routing with SSR capability.
+
+2. **Why static seed data instead of database?** — The 95 competitions are baked into TypeScript for instant load and zero-config startup. The plan is to migrate to a database in Phase 3 while keeping the seeds as fallback.
+
+3. **Why DuckDuckGo + Gemini instead of a paid search API?** — User has no budget for paid APIs. DuckDuckGo's HTML interface can be scraped for free. Google Gemini's free tier gives 1,500 requests/day which is more than enough for a daily cron job.
+
+4. **Why dark hacker aesthetic?** — User's explicit design preference. IBM Plex Mono + Syne fonts, `#07090f` background, `#00e5a0` accent green, subtle grid overlay.
+
+5. **Rarity Score system** — Each competition has a 1–10 rarity score. Scores ≥ 7 are "Hidden Gems" featured prominently. This helps users find low-competition, high-reward opportunities.
+
+---
+
+## 9. API REFERENCE
+
+### Backend API (Express, port 5001)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/hackathons` | List all hackathons (supports `?filter=`, `?search=`, `?page=`, `?limit=`) |
+| GET | `/api/hackathons/:id` | Get single hackathon by ID |
+| POST | `/api/hackathons` | Add/update a hackathon |
+| DELETE | `/api/hackathons/:id` | Delete a hackathon |
+| POST | `/api/hackathons/refresh` | Trigger platform scrapers |
+| POST | `/api/discover` | Trigger AI Web Discovery Engine |
+| GET | `/api/health` | Health check |
+
+---
+
+## 10. IMPORTANT FILE DETAILS
+
+### `src/data/index.ts` — The data hub
+Merges all 4 competition files and exports utility functions:
+- `ALL_COMPETITIONS` — full array (95 items)
+- `getHiddenGems(limit)` — competitions with rarityScore ≥ 7
+- `getUpcomingDeadlines(limit)` — sorted by nearest deadline
+- `getFreshlyOpened(limit)` — 2026-specific open competitions
+- `getStats()` — { totalCompetitions, activeNow, totalBountyUsd, platformsTracked, hiddenGems }
+- `filterCompetitions(competitions, filters)` — multi-dimensional filtering + sorting
+
+### `src/lib/constants.ts` — The source of truth
+Contains the full taxonomy: all valid values for SkillDomain, EffortLevel, Difficulty, CompetitionDensity, AIPolicy, RecurrenceCategory, CareerOutcome, and a 50+ entry PLATFORM_REGISTRY.
+
+### `backend/adapters/base.js` — Scraper framework
+All platform adapters extend BaseAdapter which provides: retry logic, rate limiting, HTTP helpers, slug generation, prize parsing, difficulty estimation.
+
+---
+
+## 11. COMPETITION COVERAGE
+
+The seed database covers these categories:
+
+| Category | Count | Examples |
+|----------|-------|---------|
+| 2026 Specific | 19 | Goldman Sachs, ARC Prize, NVIDIA Nemotron, Gemma 4 Good |
+| Daily Bounties | 7 | Topcoder, Algora, Polar.sh, Immunefi, HackerOne |
+| Weekly | 7 | MLH, Kaggle, Codeforces, LeetCode, Numerai |
+| Monthly | 13 | Lablab.ai, Zindi, AIcrowd, DrivenData, Devfolio |
+| Annual | 18 | SIH, NASA Space Apps, MIT Battlecode, XPRIZE, DARPA |
+| Always Open | 15 | Solafune, EvalAI, CodaLab, HeroX, Quantiacs |
+| Aggregators | 5 | Devpost, MLContests, HackerRank, Startup Grants India |
+
+Platforms tracked: Kaggle, Devpost, Unstop, Devfolio, HackerEarth, MLH, AIcrowd, Zindi, DrivenData, Topcoder, Numerai, WorldQuant, and 30+ more.
+
+---
+
+## 12. STRATEGIC ROADMAP (The "Living Intelligence" Vision)
+
+The ultimate goal is to transition from a static directory to a "Living Intelligence System." The following feature roadmap outlines the long-term vision provided by the project's strategic planning:
+
+### A. Core Intelligence & Status Engine
+- [ ] **Live Status Intelligence:** Track Registration Open/Closed, submission countdowns, and active participants.
+- [ ] **Change Tracking & News Feed:** Detect when deadlines extend or prizes change, and show a timeline of updates.
+- [ ] **Validity Layer / Automatic Archiving:** Auto-check link availability, disable dead links, and preserve historical data for analytics.
+
+### B. Strategic Categorization
+- [ ] **Skill Domain Tags:** AI/ML, Reinforcement Learning, Robotics, Quant, Web3, etc.
+- [ ] **Career Outcome Tags:** Cash, Internships, Hiring, Research Visibility, etc.
+- [ ] **Effort Required:** 2-hour sprint vs. multi-month research.
+- [ ] **Competition Density & Difficulty:** Low competition, overcrowded, beginner, elite, research-level.
+
+### C. Advanced Discovery & Scraping
+- [ ] **Platform Adapters:** Build specific API/data adapters for platforms like Devfolio, Unstop, and MLH (Devpost and Kaggle are already done).
+- [ ] **New Discovery Pipelines:** Monitor Reddit, Discord, Twitter, LinkedIn, GitHub trending, and HuggingFace.
+- [ ] **Missing Competitions:** Add the remaining ~6 competitions from the user's 101-item v3.0 master list (currently 95 are seeded in `src/data/`).
+
+### D. User Experience & Engagement
+- [ ] **Personalization Engine:** Recommend hackathons based on user profiles (e.g., beginner in quant, prefers remote, weekends only).
+- [ ] **Trust Score:** Rate competitions on organizer credibility, payout history, and sponsor legitimacy.
+- [ ] **Team Formation Ecosystem:** Add features to find teammates by timezone, skill tag, or university.
+- [ ] **Notifications:** Email, Discord, Telegram, or WhatsApp alerts for deadlines and new opportunities.
+- [ ] **Past Winning Projects:** Archive and display top projects, repos, and tech stacks for inspiration.
+
+### E. Execution Phasing
+- **Phase 1 (Done):** Static curated directory.
+- **Phase 2 (In Progress):** Live updating platform (scrapers & database).
+- **Phase 3:** Personalized recommendation engine.
+- **Phase 4:** Team formation ecosystem.
+- **Phase 5:** Autonomous AI agent for discovery.
+</file>
+
+<file path="already-done-job/PROMPT_FOR_NEW_AI.md">
+# HackTrack — Quick-Start Prompt for a New AI
+
+Copy-paste this entire file as context to any AI (ChatGPT, Claude, Gemini, etc.) if you want to continue building this project.
+
+---
+
+## Context
+
+I am building a project called **HackTrack** — a Global Competition Intelligence Platform. It is located at `~/Downloads/Hackathon-tracker/`.
+
+### What it does
+Tracks 95+ hackathons, coding competitions, bounty platforms, and AI challenges across the internet. Has a dark hacker-themed React frontend and a Node.js backend with an AI-powered web discovery engine that automatically finds new hackathons using DuckDuckGo + Google Gemini API (free tier).
+
+### Tech stack
+- **Frontend:** React 19 + TanStack Router + Tailwind CSS v4 + Vite 7 (TypeScript)
+- **Backend:** Node.js + Express (JavaScript)
+- **Scraping:** Axios + Cheerio (platform adapters for Devpost/Kaggle)
+- **AI Discovery:** @google/generative-ai (Gemini 1.5 Flash free tier) + DuckDuckGo HTML scraping
+- **Scheduling:** node-cron (daily at midnight)
+
+### Current state
+- ✅ Frontend fully built (homepage with hero, filters, card grid, countdown, hidden gems)
+- ✅ 95 competitions seeded in TypeScript files
+- ✅ Backend API server with adapters for Devpost and Kaggle
+- ✅ AI Web Discovery Engine built (DuckDuckGo → Gemini extraction)
+- ✅ Project fully cleaned (all legacy/unused files removed)
+- ❌ Not yet connected to a database (data is static TypeScript arrays)
+- ❌ No competition detail page yet
+- ❌ Not deployed yet
+
+### What to do next
+1. **The Strategic Roadmap:** The project is transitioning from a "directory" to a "Living Intelligence System." Read `already-done-job/HANDOFF.md` section 12. There is a 20-point strategic roadmap detailing exactly what needs to be built (Status Intelligence, Trust Scores, Team Formation, Personalization, etc.).
+2. **Missing Competitions:** We have a master list of 101 competitions (v3.0), but currently only 95 are seeded in the `src/data/` files. Identify and add the missing ~6 competitions.
+3. Read `already-done-job/HANDOFF.md` for the complete architecture, file structure, data schema, and roadmap.
+4. Read `already-done-job/CHANGELOG.md` for the full history of what was built and when.
+
+### How to run
+```bash
+cd ~/Downloads/Hackathon-tracker
+npm install
+npm run dev          # Runs both frontend + backend
+# Frontend: http://localhost:5173
+# Backend:  http://localhost:5001
+```
+
+### Key files to understand first
+1. `src/lib/types.ts` — The Competition interface (25+ fields)
+2. `src/data/index.ts` — Master data merge + filter utilities
+3. `src/routes/index.tsx` — The homepage
+4. `backend/server.js` — Express API + cron
+5. `backend/discovery/search_crawler.js` — The web discovery engine
+6. `already-done-job/HANDOFF.md` — Full project documentation
+</file>
+
+<file path="backend/adapters/base.js">
+/**
+ * BaseAdapter — Abstract interface for all platform source adapters.
+ * 
+ * Every platform adapter must extend this class and implement:
+ *   - fetch()     → scrape/fetch raw data from the platform
+ *   - normalize() → convert raw data to our Competition schema
+ * 
+ * The orchestrator calls adapters in parallel and merges results.
+ */
+⋮----
+class BaseAdapter
+⋮----
+this.platform = config.platform;       // e.g. 'devpost'
+this.name = config.name;               // e.g. 'Devpost'
+⋮----
+this.scraperType = config.scraperType; // 'api' | 'html' | 'rss'
+this.rateLimit = config.rateLimit || 2000; // ms between requests
+⋮----
+/** Override: Fetch raw competition data from the platform */
+async fetch()
+⋮----
+/** Override: Normalize a single raw entry to our schema */
+normalize(raw)
+⋮----
+/** Run the full pipeline: fetch → normalize → dedupe */
+async run()
+⋮----
+/** Helper: HTTP GET with retry */
+async httpGet(url, options =
+⋮----
+/** Helper: sleep for rate limiting */
+sleep(ms)
+⋮----
+/** Helper: generate a slug from title */
+slugify(text)
+⋮----
+/** Helper: parse prize string to USD estimate */
+parsePrizeUsd(prizeStr)
+⋮----
+// USD
+⋮----
+// INR
+⋮----
+return Math.round(val / 83); // INR to USD approx
+⋮----
+/** Helper: estimate difficulty from description */
+estimateDifficulty(desc = '', tags = [])
+</file>
+
+<file path="backend/adapters/devpost.js">
+/**
+ * Devpost Adapter — Fetches hackathons from Devpost's JSON API.
+ * Devpost exposes a public JSON endpoint at /hackathons.json
+ */
+⋮----
+class DevpostAdapter extends BaseAdapter
+⋮----
+async fetch()
+⋮----
+// Try fallback endpoint
+⋮----
+normalize(raw)
+⋮----
+mapStatus(status)
+⋮----
+estimateDensity(registrations)
+⋮----
+extractDomains(raw)
+</file>
+
+<file path="backend/adapters/kaggle.js">
+/**
+ * Kaggle Adapter — Fetches competitions from Kaggle's public API.
+ * Note: Full API requires credentials. Public endpoint returns active competitions.
+ */
+⋮----
+class KaggleAdapter extends BaseAdapter
+⋮----
+async fetch()
+⋮----
+normalize(raw)
+⋮----
+gpuCreditsIncluded: true, // Kaggle provides free GPU notebooks
+⋮----
+estimateKaggleDifficulty(raw)
+⋮----
+extractDomains(raw)
+</file>
+
+<file path="backend/discovery/llm_extractor.js">
+// Ensure there is an API key, otherwise just return null
+⋮----
+async function extractCompetitionData(htmlContent, sourceUrl)
+⋮----
+// To save tokens, strip out excessive HTML whitespace
+const cleanText = htmlContent.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').substring(0, 15000); // Send max 15k chars
+⋮----
+// Clean up markdown formatting if any
+⋮----
+parsed.platform = 'discovered'; // flag indicating it was found by web crawler
+⋮----
+parsed.rarityScore = 8; // Newly discovered are usually rare!
+parsed.trustScore = 5; // Needs manual verification
+</file>
+
+<file path="backend/discovery/search_crawler.js">
+async function searchDuckDuckGo(query)
+⋮----
+async function discoverNewHackathons()
+⋮----
+// Search query targeting new/unlisted hackathons
+⋮----
+// Filter out known domains
+⋮----
+}).slice(0, 3); // Process only top 3 to keep it lightweight
+⋮----
+// Clean up DOM before text extraction
+</file>
+
+<file path="src/components/CompetitionCard.tsx">
+import { useState, useEffect } from 'react';
+import type { Competition } from '@/lib/types';
+import { PLATFORMS, RECURRENCE_COLORS, DIFFICULTY_COLORS, AI_POLICY_LABELS } from '@/lib/constants';
+⋮----
+function CountdownTimer(
+⋮----
+const update = () =>
+⋮----
+{/* Top: badges */}
+⋮----
+{/* Title */}
+⋮----
+{/* Description */}
+⋮----
+{/* Meta grid */}
+⋮----
+{/* Tags */}
+⋮----
+{/* CTA */}
+</file>
+
+<file path="src/components/CountdownCards.tsx">
+import { useState, useEffect } from 'react';
+import type { Competition } from '@/lib/types';
+import { PLATFORMS } from '@/lib/constants';
+⋮----
+const tick = () =>
+</file>
+
+<file path="src/components/FilterBar.tsx">
+import { useState } from 'react';
+import type { FilterState, SkillDomain, Difficulty, EffortLevel, AiPolicy, RecurrenceCategory } from '@/lib/types';
+import { SKILL_DOMAIN_LABELS, DIFFICULTY_LABELS, EFFORT_LEVEL_LABELS, AI_POLICY_LABELS, RECURRENCE_LABELS, DEFAULT_FILTER_STATE } from '@/lib/constants';
+⋮----
+interface Props {
+  filters: FilterState;
+  onChange: (filters: FilterState) => void;
+  totalResults: number;
+}
+⋮----
+function Chip(
+⋮----
+function Select(
+⋮----
+const reset = ()
+⋮----
+{/* Search + Toggle */}
+⋮----
+onChange=
+⋮----
+onClick=
+⋮----
+{/* Recurrence chips — always visible */}
+⋮----
+<Chip label="All" active=
+⋮----
+{/* Expanded filters */}
+</file>
+
+<file path="src/components/HeroSection.tsx">
+import type { PlatformStats } from '@/lib/types';
+⋮----
+export function HeroSection(
+⋮----
+{/* Title */}
+⋮----
+{/* Stats bar */}
+⋮----
+{/* Creator tag */}
+⋮----
+function StatItem(
+⋮----
+function formatBounty(usd: number): string
+</file>
+
+<file path="src/components/HiddenGems.tsx">
+import type { Competition } from '@/lib/types';
+import { CompetitionCard } from './CompetitionCard';
+</file>
+
+<file path="src/data/competitions-part2.ts">
+// ─── Competition Seed Data — Part 2: Weekly + Monthly ───
+import type { Competition } from '../lib/types';
+⋮----
+// ════════════════════════════════════════
+// CATEGORY 3 — WEEKLY
+// ════════════════════════════════════════
+⋮----
+// ════════════════════════════════════════
+// CATEGORY 4 — MONTHLY / EVERY FEW WEEKS
+// ════════════════════════════════════════
+</file>
+
+<file path="src/data/competitions-part3.ts">
+// Part 3: Annual + Always Open + Remaining
+import type { Competition } from '../lib/types';
+const C = (id:string, slug:string, title:string, platform:string, org:string, desc:string, url:string, s:any): Competition => (
+⋮----
+// ANNUAL EVENTS
+⋮----
+// ALWAYS OPEN
+⋮----
+// Additional 2026 specific that were missing from part1
+</file>
+
+<file path="src/data/competitions-part4.ts">
+// Part 4: Remaining Aggregators and Platforms
+import type { Competition } from '../lib/types';
+⋮----
+const C = (id:string, slug:string, title:string, platform:string, org:string, desc:string, url:string, s:any): Competition => (
+</file>
+
+<file path="src/data/competitions.ts">
+// ─── Competition Seed Data — Part 1: 2026 Specific + Daily ───
+import type { Competition } from '../lib/types';
+⋮----
+// Helper to generate slug from title
+const slug = (t: string)
+⋮----
+// ════════════════════════════════════════
+// CATEGORY 1 — 2026 SPECIFIC (ONE-TIME)
+// ════════════════════════════════════════
+⋮----
+// ════════════════════════════════════════
+// CATEGORY 2 — DAILY
+// ════════════════════════════════════════
+</file>
+
+<file path="src/data/index.ts">
+// ─── Master Competition Data — Merges all parts ───
+import { COMPETITIONS } from './competitions';
+import { COMPETITIONS_PART2 } from './competitions-part2';
+import { COMPETITIONS_PART3 } from './competitions-part3';
+import { COMPETITIONS_PART4 } from './competitions-part4';
+import type { Competition, PlatformStats, FilterState } from '../lib/types';
+⋮----
+// Merge all competition data into a single array
+⋮----
+// ─── Computed helpers ───
+⋮----
+export function getHiddenGems(limit = 6): Competition[]
+⋮----
+export function getUpcomingDeadlines(limit = 5): Competition[]
+⋮----
+export function getFreshlyOpened(limit = 6): Competition[]
+⋮----
+export function getStats(): PlatformStats
+⋮----
+export function filterCompetitions(competitions: Competition[], filters: FilterState): Competition[]
+⋮----
+// Search
+⋮----
+// Platform filter
+⋮----
+// Skill domains
+⋮----
+// Difficulty
+⋮----
+// Effort level
+⋮----
+// AI policy
+⋮----
+// Mode
+⋮----
+// Competition density
+⋮----
+// Recurrence category
+⋮----
+// Career outcome
+⋮----
+// Sorting
+</file>
+
+<file path="src/lib/constants.ts">
+// ─── Constants, Taxonomies, and Color Mappings ───
+⋮----
+import type {
+  SkillDomain,
+  CareerOutcome,
+  EffortLevel,
+  Difficulty,
+  CompetitionDensity,
+  AiPolicy,
+  RecurrenceCategory,
+  PlatformInfo,
+  FilterState,
+} from './types';
+⋮----
+// ─── SKILL DOMAIN LABELS ───
+⋮----
+// ─── CAREER OUTCOME LABELS ───
+⋮----
+// ─── EFFORT LEVEL LABELS ───
+⋮----
+// ─── DIFFICULTY LABELS ───
+⋮----
+// ─── COMPETITION DENSITY LABELS ───
+⋮----
+// ─── AI POLICY LABELS ───
+⋮----
+// ─── RECURRENCE CATEGORY LABELS ───
+⋮----
+// ─── PLATFORM REGISTRY ───
+⋮----
+// ─── DEFAULT FILTER STATE ───
+⋮----
+// ─── STATUS COLORS ───
+</file>
+
+<file path="src/lib/types.ts">
+// ─── Competition Intelligence Platform — Core Types ───
+⋮----
+export type CompetitionStatus = 'open' | 'upcoming' | 'closed' | 'archived' | 'unknown';
+export type RegistrationStatus = 'open' | 'closed' | 'waitlist' | 'unknown';
+⋮----
+export type SkillDomain =
+  | 'ai_ml'
+  | 'reinforcement_learning'
+  | 'robotics'
+  | 'quant_finance'
+  | 'cybersecurity'
+  | 'competitive_programming'
+  | 'web_app'
+  | 'open_source'
+  | 'data_science'
+  | 'computer_vision'
+  | 'nlp_llm'
+  | 'embedded_iot'
+  | 'blockchain_web3'
+  | 'cloud_devops'
+  | 'multi_agent'
+  | 'game_ai'
+  | 'hardware'
+  | 'space_science'
+  | 'social_impact'
+  | 'design';
+⋮----
+export type CareerOutcome =
+  | 'cash'
+  | 'internship'
+  | 'full_time'
+  | 'research_visibility'
+  | 'startup_funding'
+  | 'networking'
+  | 'academic_prestige'
+  | 'open_source_reputation'
+  | 'recruitment_pipeline';
+⋮----
+export type EffortLevel =
+  | '2h_sprint'
+  | 'weekend'
+  | '1_week'
+  | 'multi_month'
+  | 'passive'
+  | 'daily_tasks';
+⋮----
+export type Difficulty =
+  | 'beginner'
+  | 'intermediate'
+  | 'advanced'
+  | 'elite'
+  | 'research';
+⋮----
+export type CompetitionDensity =
+  | 'very_low'
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'overcrowded';
+⋮----
+export type AiPolicy =
+  | 'allowed'
+  | 'restricted'
+  | 'no_ai'
+  | 'ai_core'
+  | 'open_model'
+  | 'api_based';
+⋮----
+export type Mode = 'remote' | 'physical' | 'hybrid';
+⋮----
+export type TeamType = 'individual' | 'team' | 'both';
+⋮----
+export type Recurrence =
+  | 'one_time'
+  | 'daily'
+  | 'weekly'
+  | 'biweekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'annual'
+  | 'always_open';
+⋮----
+export type Validity = 'active' | 'archived' | 'recurring' | 'historical' | 'unknown';
+⋮----
+export type RecurrenceCategory =
+  | '2026_specific'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'annual'
+  | 'always_open';
+⋮----
+export interface Competition {
+  id: string;
+  slug: string;
+  title: string;
+  platform: string;
+  organizer?: string;
+  description: string;
+  url: string;
+
+  // Status
+  status: CompetitionStatus;
+  registrationStatus: RegistrationStatus;
+  submissionDeadline?: string; // ISO date
+  registrationDeadline?: string;
+  startDate?: string;
+  endDate?: string;
+
+  // Prize & Participants
+  prizePoolUsd?: number;
+  prizeDisplay: string;
+  participantsEstimate?: string;
+  teamSizeMin: number;
+  teamSizeMax?: number;
+
+  // Categorization
+  skillDomains: SkillDomain[];
+  careerOutcomes: CareerOutcome[];
+  effortLevel: EffortLevel;
+  difficulty: Difficulty;
+  competitionDensity: CompetitionDensity;
+  recurrenceCategory: RecurrenceCategory;
+
+  // AI Policy
+  aiPolicy: AiPolicy;
+  apiCreditsIncluded: boolean;
+  gpuCreditsIncluded: boolean;
+
+  // Access & Eligibility
+  mode: Mode;
+  countryRestrictions?: string[];
+  studentOnly: boolean;
+  teamType: TeamType;
+  requiredStack?: string[];
+  hardwareRequired: boolean;
+
+  // Intelligence Scores
+  rarityScore?: number;
+  trustScore?: number;
+  recruiterVisibility?: number;
+  resumeValue?: number;
+  beginnerFriendlyScore?: number;
+
+  // Metadata
+  tags: string[];
+  imageUrl?: string;
+  recurrence: Recurrence;
+  validity: Validity;
+
+  // UI helpers
+  platformColor?: string;
+  badgeVariant?: string;
+}
+⋮----
+// Status
+⋮----
+submissionDeadline?: string; // ISO date
+⋮----
+// Prize & Participants
+⋮----
+// Categorization
+⋮----
+// AI Policy
+⋮----
+// Access & Eligibility
+⋮----
+// Intelligence Scores
+⋮----
+// Metadata
+⋮----
+// UI helpers
+⋮----
+export interface CompetitionChange {
+  id: string;
+  competitionId: string;
+  competitionTitle: string;
+  fieldName: string;
+  oldValue?: string;
+  newValue: string;
+  detectedAt: string;
+}
+⋮----
+export interface PlatformInfo {
+  id: string;
+  name: string;
+  baseUrl: string;
+  scraperType: 'api' | 'html' | 'rss' | 'manual';
+  color: string;
+  icon?: string;
+}
+⋮----
+export interface FilterState {
+  search: string;
+  platforms: string[];
+  skillDomains: SkillDomain[];
+  difficulty: Difficulty | null;
+  effortLevel: EffortLevel | null;
+  aiPolicy: AiPolicy | null;
+  mode: Mode | null;
+  competitionDensity: CompetitionDensity | null;
+  recurrenceCategory: RecurrenceCategory | null;
+  careerOutcome: CareerOutcome | null;
+  sortBy: 'deadline' | 'prize' | 'rarity' | 'freshness' | 'title';
+  sortOrder: 'asc' | 'desc';
+}
+⋮----
+export interface PlatformStats {
+  totalCompetitions: number;
+  activeNow: number;
+  totalBountyUsd: number;
+  platformsTracked: number;
+  hiddenGems: number;
+}
+</file>
+
+<file path="src/lib/utils.ts">
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+⋮----
+export function cn(...inputs: ClassValue[])
+</file>
+
+<file path="src/routes/__root.tsx">
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+  useRouter,
+  HeadContent,
+  Scripts,
+} from "@tanstack/react-router";
+⋮----
+import appCss from "../styles.css?url";
+⋮----
+function NotFoundComponent()
+⋮----
+function ErrorComponent(
+⋮----
+router.invalidate();
+reset();
+⋮----
+function RootShell(
+⋮----
+function RootComponent()
+</file>
+
+<file path="src/routes/index.tsx">
+import { useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import type { FilterState } from '@/lib/types';
+import { DEFAULT_FILTER_STATE } from '@/lib/constants';
+import { ALL_COMPETITIONS, getHiddenGems, getUpcomingDeadlines, getStats, filterCompetitions } from '@/data';
+import { HeroSection } from '@/components/HeroSection';
+import { FilterBar } from '@/components/FilterBar';
+import { CountdownCards } from '@/components/CountdownCards';
+import { HiddenGems } from '@/components/HiddenGems';
+import { CompetitionCard } from '@/components/CompetitionCard';
+⋮----
+{/* Nav */}
+⋮----
+{/* Hero */}
+⋮----
+{/* Countdown section - only when no filters active */}
+⋮----
+onClick=
+⋮----
+{/* Footer */}
+</file>
+
+<file path="src/router.tsx">
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+⋮----
+export const getRouter = () =>
+</file>
+
+<file path="src/routeTree.gen.ts">
+/* eslint-disable */
+⋮----
+// @ts-nocheck
+⋮----
+// noinspection JSUnusedGlobalSymbols
+⋮----
+// This file was automatically generated by TanStack Router.
+// You should NOT make any changes in this file as it will be overwritten.
+// Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
+⋮----
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+⋮----
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/'
+  id: '__root__' | '/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+}
+⋮----
+interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
+⋮----
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+⋮----
+interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+</file>
+
+<file path="src/server.ts">
+type ServerEntry = {
+  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
+};
+⋮----
+async function getServerEntry(): Promise<ServerEntry>
+⋮----
+function errorResponse(error?: unknown): Response
+⋮----
+async fetch(request: Request, env: unknown, ctx: unknown)
+</file>
+
+<file path="src/start.ts">
+import { createStart, createMiddleware } from "@tanstack/react-start";
+</file>
+
+<file path="src/styles.css">
+@source "../src";
+⋮----
+/* ─── GOOGLE FONTS ─── */
+⋮----
+@theme inline {
+⋮----
+:root {
+⋮----
+/* Dark hacker palette */
+⋮----
+/* Category accent colors */
+⋮----
+/* ─── BACKGROUND GRID ─── */
+body::before {
+⋮----
+/* ─── ENTRANCE ANIMATIONS ─── */
+⋮----
+.animate-in {
+.animate-fade-in {
+.animate-slide-up {
+⋮----
+/* Stagger children */
+.stagger-children > * {
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 480ms; }
+.stagger-children > *:nth-child(n+10) { animation-delay: 500ms; }
+⋮----
+@layer base {
+⋮----
+* {
+body {
+::selection {
+::-webkit-scrollbar {
+::-webkit-scrollbar-track {
+::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb:hover {
+⋮----
+/* ─── UTILITY CLASSES ─── */
+.glass-card {
+.neon-glow {
+.neon-glow-hover:hover {
+.text-gradient {
+.badge-pulse {
+.shimmer {
+</file>
+
+<file path=".prettierignore">
+node_modules
+dist
+.output
+.vinxi
+pnpm-lock.yaml
+package-lock.json
+bun.lock
+routeTree.gen.ts
+</file>
+
+<file path=".prettierrc">
+{
+  "printWidth": 100,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "all"
+}
+</file>
+
+<file path="eslint.config.js">
+
+</file>
+
+<file path="tsconfig.json">
+{
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.mts", "eslint.config.js"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+
+    /* Bundler mode */
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+
+    /* Linting */
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+</file>
+
+<file path="vite.config.mts">
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
+</file>
 
 <file path="backend/routes/hackathons.js">
 // Helper to read hackathons data
@@ -99,51 +1378,16 @@ const writeHackathons = (data) =>
 // DELETE hackathon
 </file>
 
-<file path="backend/scraper.js">
-// Sample data for initialization
-⋮----
-// Function to fetch from Kaggle API
-async function fetchFromKaggle()
-⋮----
-// Using public competitions endpoint (no auth needed)
-⋮----
-// Function to fetch from DevPost RSS
-async function fetchFromDevPost()
-⋮----
-// Function to fetch from Unstop
-async function fetchFromUnstop()
-⋮----
-// Unstop doesn't have public API, so we'd need to scrape or use a proxy
-⋮----
-// Transform data to standard format
-function transformHackathon(data, platform)
-⋮----
-// Main scraper function
-async function scrapeHackathons()
-⋮----
-// Fetch from all sources
-⋮----
-// Transform and combine
-⋮----
-// Read existing data
-⋮----
-// Merge: new data + existing (avoid duplicates by platform+name)
-⋮----
-// Save to file
-⋮----
-hackathons: merged.slice(0, 100), // Keep latest 100
-⋮----
-// Run if called directly
-</file>
-
 <file path="backend/server.js">
 // Middleware
 ⋮----
-// Routes
+// API Routes
+⋮----
+// Manual trigger for Web Discovery Engine
+⋮----
+// Scheduled Jobs — Run Discovery Engine every 24 hours at midnight
 ⋮----
 // Health check
-⋮----
-// Serve main index page
 ⋮----
 // Error handling middleware
 ⋮----
@@ -152,3542 +1396,171 @@ hackathons: merged.slice(0, 100), // Keep latest 100
 // Start server
 </file>
 
-<file path="data/hackathons.json">
-{
-  "hackathons": [
-    {
-      "id": "hack_kaggle_1",
-      "name": "Kaggle Competition",
-      "platform": "Kaggle",
-      "category": "recurring",
-      "description": "Weekly & monthly machine learning competitions",
-      "prizeRange": "$1K – $100K",
-      "participants": "Variable (1K–10K)",
-      "deadline": "2026-06-30T23:59:59Z",
-      "url": "https://www.kaggle.com/competitions",
-      "tags": ["ml", "data-science", "ai", "competitive", "python"],
-      "remote": true,
-      "aiAllowed": true
-    },
-    {
-      "id": "hack_devpost_1",
-      "name": "DevPost Hackathons",
-      "platform": "DevPost",
-      "category": "recurring",
-      "description": "Global software hackathons on DevPost",
-      "prizeRange": "Variable",
-      "participants": "Variable",
-      "deadline": null,
-      "url": "https://www.devpost.com/hackathons",
-      "tags": ["hackathon", "web", "mobile", "ai", "iot"],
-      "remote": true,
-      "aiAllowed": true
-    },
-    {
-      "id": "hack_unstop_1",
-      "name": "Unstop Hackathons",
-      "platform": "Unstop",
-      "category": "rolling",
-      "description": "India-focused continuous hackathon platform",
-      "prizeRange": "₹5K – ₹5L",
-      "participants": "50–500",
-      "deadline": null,
-      "url": "https://unstop.com/hackathons/",
-      "tags": ["india", "hackathon", "low-competition"],
-      "remote": true,
-      "aiAllowed": true
-    }
-  ],
-  "lastUpdated": "2026-05-14T12:00:00Z",
-  "totalCount": 3,
-  "sourcesFetched": ["kaggle", "devpost", "unstop"]
-}
-</file>
-
-<file path="public/js/api.js">
-/**
- * API Communication Module
- * Handles all requests to the backend
- */
-⋮----
-/**
-   * Get all hackathons
-   */
-async getHackathons(filter = 'all', search = '', limit = 100, page = 1)
-⋮----
-/**
-   * Get single hackathon details
-   */
-async getHackathon(id)
-⋮----
-/**
-   * Refresh/Update hackathon data from sources
-   */
-async refreshData()
-⋮----
-/**
-   * Add new hackathon
-   */
-async addHackathon(hackathonData)
-⋮----
-/**
-   * Delete hackathon
-   */
-async deleteHackathon(id)
-⋮----
-/**
-   * Health check
-   */
-async healthCheck()
-⋮----
-// Export for use in other modules
-</file>
-
-<file path="public/js/filters.js">
-/**
- * Filter and search functionality
- * Legacy support for original filter logic
- */
-⋮----
-// This file provides additional filter utilities
-// Most logic is now handled by main.js and API calls
-⋮----
-/**
-   * Filter hackathons by category
-   */
-filterByCategory(hackathons, category)
-⋮----
-/**
-   * Filter hackathons by search query
-   */
-filterBySearch(hackathons, query)
-⋮----
-/**
-   * Filter by deadline (upcoming)
-   */
-filterUpcoming(hackathons)
-⋮----
-/**
-   * Filter by deadline (closed)
-   */
-filterClosed(hackathons)
-⋮----
-/**
-   * Filter by remote participation
-   */
-filterRemote(hackathons)
-⋮----
-/**
-   * Filter by prize range
-   */
-filterByPrizeRange(hackathons, minPrize, maxPrize)
-⋮----
-/**
-   * Sort hackathons by field
-   */
-sortBy(hackathons, field, order = 'asc')
-⋮----
-// Export for use
-</file>
-
-<file path="public/js/main.js">
-/**
- * Main application logic
- * Handles UI interactions and data rendering
- */
-⋮----
-class HackTracker
-⋮----
-/**
-   * Initialize the app
-   */
-async init()
-⋮----
-// Check backend health
-⋮----
-// Load initial data
-⋮----
-/**
-   * Load hackathons from backend
-   */
-async loadHackathons(filter = 'all', search = '')
-⋮----
-/**
-   * Setup event listeners
-   */
-setupEventListeners()
-⋮----
-// Filter buttons
-⋮----
-// Search input
-⋮----
-// Update button (if exists)
-⋮----
-/**
-   * Handle filter changes
-   */
-async handleFilter(filter)
-⋮----
-// Update button states
-⋮----
-// Load filtered data
-⋮----
-/**
-   * Handle search
-   */
-async handleSearch(query)
-⋮----
-/**
-   * Handle data refresh
-   */
-async handleUpdate()
-⋮----
-// Reload data
-⋮----
-// Show toast notification
-⋮----
-/**
-   * Update UI with hackathons
-   */
-updateUI()
-⋮----
-/**
-   * Create hackathon card HTML
-   */
-createCard(hackathon)
-⋮----
-/**
-   * Update statistics
-   */
-updateStats()
-⋮----
-// Update last updated time
-⋮----
-/**
-   * Show notification
-   */
-showNotification(message)
-⋮----
-// Create notification element
-⋮----
-// Remove after 3 seconds
-⋮----
-// Initialize app when DOM is ready
-</file>
-
-<file path="public/index.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hackathon & Competition Tracker — IISc AI/ML Student</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #07090f;
-    --bg2: #0d1120;
-    --bg3: #111827;
-    --border: #1e2d45;
-    --accent: #00e5a0;
-    --accent2: #ff5c35;
-    --accent3: #4d9fff;
-    --accent4: #f0c040;
-    --text: #e8edf5;
-    --muted: #6b7a99;
-    --open: #00e5a0;
-    --upcoming: #4d9fff;
-    --recurring: #c78cff;
-    --rolling: #f0c040;
-    --niche: #ff5c35;
-    --bounty: #ff85c2;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    line-height: 1.7;
-    min-height: 100vh;
-  }
-
-  /* ── BACKGROUND GRID ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrap { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-
-  /* ── HEADER ── */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 40px 0 32px;
-    margin-bottom: 0;
-  }
-
-  .header-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-
-  .logo-area h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(24px, 4vw, 42px);
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: -1px;
-    line-height: 1.1;
-  }
-
-  .logo-area h1 span { color: var(--accent); }
-
-  .logo-area p {
-    color: var(--muted);
-    margin-top: 8px;
-    font-size: 13px;
-    max-width: 520px;
-  }
-
-  .header-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-  }
-
-  .last-updated {
-    font-size: 11px;
-    color: var(--muted);
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 4px 10px;
-  }
-
-  .last-updated span { color: var(--accent); }
-
-  /* ── STATS BAR ── */
-  .stats-bar {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 28px 0;
-    background: var(--bg2);
-  }
-
-  .stat {
-    flex: 1;
-    padding: 20px 24px;
-    border-right: 1px solid var(--border);
-    text-align: center;
-  }
-  .stat:last-child { border-right: none; }
-
-  .stat-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--accent);
-    display: block;
-  }
-
-  .stat-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 2px;
-  }
-
-  /* ── STRATEGY BANNER ── */
-  .strategy-banner {
-    background: linear-gradient(135deg, rgba(0,229,160,0.07) 0%, rgba(77,159,255,0.05) 100%);
-    border: 1px solid rgba(0,229,160,0.2);
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin-bottom: 28px;
-  }
-
-  .strategy-banner h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-  }
-
-  .strategy-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
-    margin-top: 12px;
-  }
-
-  .strategy-tip {
-    background: rgba(255,255,255,0.03);
-    border-radius: 6px;
-    padding: 12px 14px;
-    font-size: 12px;
-    color: var(--text);
-    border-left: 3px solid var(--accent);
-  }
-
-  .strategy-tip strong { color: var(--accent); display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; }
-
-  /* ── FILTER BAR ── */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 28px;
-    align-items: center;
-  }
-
-  .filter-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-right: 4px;
-  }
-
-  .filter-btn {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .filter-btn:hover, .filter-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
-    font-weight: 500;
-  }
-
-  /* ── SECTION TITLE ── */
-  .section-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-    margin-top: 36px;
-  }
-
-  .section-head h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .section-count {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .section-line {
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ── CARDS GRID ── */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: 16px;
-    margin-bottom: 8px;
-  }
-
-  /* ── CARD ── */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-
-  .card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(0,229,160,0.3);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  }
-
-  .card:hover::before { opacity: 1; }
-  .card[data-cat="open"]::before { background: var(--open); }
-  .card[data-cat="upcoming"]::before { background: var(--upcoming); }
-  .card[data-cat="recurring"]::before { background: var(--recurring); }
-  .card[data-cat="rolling"]::before { background: var(--rolling); }
-  .card[data-cat="niche"]::before { background: var(--niche); }
-  .card[data-cat="bounty"]::before { background: var(--bounty); }
-
-  .card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .card-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .badge {
-    font-size: 9px;
-    font-weight: 500;
-    padding: 3px 8px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    white-space: nowrap;
-  }
-
-  .badge-open    { background: rgba(0,229,160,0.15); color: var(--open);     border: 1px solid rgba(0,229,160,0.3); }
-  .badge-upcoming{ background: rgba(77,159,255,0.15); color: var(--upcoming); border: 1px solid rgba(77,159,255,0.3); }
-  .badge-recurring{background: rgba(199,140,255,0.15);color: var(--recurring);border: 1px solid rgba(199,140,255,0.3);}
-  .badge-rolling { background: rgba(240,192,64,0.15); color: var(--rolling);  border: 1px solid rgba(240,192,64,0.3); }
-  .badge-niche   { background: rgba(255,92,53,0.15);  color: var(--niche);    border: 1px solid rgba(255,92,53,0.3); }
-  .badge-bounty  { background: rgba(255,133,194,0.15);color: var(--bounty);   border: 1px solid rgba(255,133,194,0.3);}
-  .badge-ai      { background: rgba(0,229,160,0.08);  color: var(--accent);   border: 1px solid rgba(0,229,160,0.15);}
-  .badge-noai    { background: rgba(255,92,53,0.08);  color: var(--accent2);  border: 1px solid rgba(255,92,53,0.15);}
-  .badge-india   { background: rgba(240,192,64,0.1);  color: var(--accent4);  border: 1px solid rgba(240,192,64,0.2);}
-  .badge-iisc    { background: rgba(77,159,255,0.12); color: var(--accent3);  border: 1px solid rgba(77,159,255,0.25);}
-
-  .card-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.3;
-  }
-
-  .card-title a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .card-title a:hover { color: var(--accent); }
-
-  .card-org {
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .card-desc {
-    font-size: 12px;
-    color: #8896b0;
-    line-height: 1.6;
-  }
-
-  .card-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .meta-item {
-    background: var(--bg3);
-    border-radius: 6px;
-    padding: 8px 12px;
-  }
-
-  .meta-key {
-    font-size: 9px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    display: block;
-    margin-bottom: 3px;
-  }
-
-  .meta-val {
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .meta-val.prize { color: var(--accent); font-weight: 600; }
-  .meta-val.deadline-hot { color: var(--accent2); }
-  .meta-val.deadline-ok  { color: var(--accent4); }
-
-  .card-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-size: 10px;
-    color: var(--muted);
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 2px 7px;
-  }
-
-  .card-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    border-radius: 5px;
-    padding: 7px 14px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    text-decoration: none;
-    transition: all 0.15s ease;
-    align-self: flex-start;
-    margin-top: auto;
-  }
-
-  .card-link:hover {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  .card-link svg { width: 12px; height: 12px; }
-
-  /* ── PLATFORMS TABLE ── */
-  .platform-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--bg2);
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    margin-bottom: 12px;
-  }
-
-  .platform-table th {
-    background: var(--bg3);
-    padding: 10px 16px;
-    text-align: left;
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .platform-table td {
-    padding: 12px 16px;
-    font-size: 12px;
-    border-bottom: 1px solid rgba(30,45,69,0.5);
-    color: var(--text);
-    vertical-align: middle;
-  }
-
-  .platform-table tr:last-child td { border-bottom: none; }
-  .platform-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-  .platform-table a { color: var(--accent3); text-decoration: none; }
-  .platform-table a:hover { color: var(--accent); text-decoration: underline; }
-
-  .comp-low { color: var(--open); }
-  .comp-med { color: var(--accent4); }
-  .comp-high { color: var(--accent2); }
-
-  /* ── HIDDEN (filter) ── */
-  .card.hidden, .section.hidden { display: none; }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border);
-    margin-top: 60px;
-    padding: 28px 0;
-  }
-
-  .footer-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .footer-inner p {
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .footer-inner a { color: var(--accent3); text-decoration: none; }
-
-  /* ── SEARCH ── */
-  .search-wrap {
-    position: relative;
-    margin-bottom: 28px;
-  }
-
-  .search-input {
-    width: 100%;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 16px 12px 42px;
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    transition: border-color 0.15s;
-    outline: none;
-  }
-
-  .search-input:focus {
-    border-color: var(--accent);
-  }
-
-  .search-input::placeholder { color: var(--muted); }
-
-  .search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    width: 16px;
-    height: 16px;
-  }
-
-  /* ── LEGEND ── */
-  .legend {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding: 14px 18px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 28px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* ── TOP PICKS ── */
-  .top-picks-banner {
-    background: linear-gradient(135deg, rgba(255,92,53,0.08) 0%, rgba(240,192,64,0.06) 100%);
-    border: 1px solid rgba(255,92,53,0.25);
-    border-radius: 8px;
-    padding: 18px 22px;
-    margin-bottom: 28px;
-  }
-
-  .top-picks-banner h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    color: var(--accent2);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-
-  .picks-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .pick-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 12px;
-    color: var(--text);
-  }
-
-  .pick-rank {
-    color: var(--accent2);
-    font-weight: 600;
-    min-width: 20px;
-    font-family: 'Syne', sans-serif;
-  }
-
-  .pick-reason { color: var(--muted); margin-left: 4px; }
-
-  /* Responsive */
-  @media (max-width: 600px) {
-    .stats-bar { flex-wrap: wrap; }
-    .stat { min-width: 50%; }
-    .cards-grid { grid-template-columns: 1fr; }
-    .card-meta { grid-template-columns: 1fr; }
-    .header-meta { align-items: flex-start; }
-    .platform-table { font-size: 11px; }
-    .platform-table th, .platform-table td { padding: 8px 10px; }
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="wrap">
-    <div class="header-inner">
-      <div class="logo-area">
-        <h1>Hack<span>Track</span> <span style="color:var(--muted);font-size:0.5em;letter-spacing:2px;">v2.0</span></h1>
-        <p>Remote hackathon & competition tracker — curated for IISc AI/ML students. Updated manually. Covers prizes, deadlines, competition levels, and strategy.</p>
-      </div>
-      <div class="header-meta">
-        <button id="updateBtn" class="filter-btn" style="background: var(--accent); border-color: var(--accent); color: var(--bg); cursor: pointer; font-weight: 600;">🔄 Update</button>
-        <div class="last-updated">Last updated: <span id="lastUpdated">May 14, 2026</span></div>
-        <div class="last-updated" style="margin-top:4px;">Owner: <span>IISc RBCCPS · M.Tech</span></div>
-      </div>
-    </div>
-  </div>
-</header>
-
-<main>
-<div class="wrap">
-
-  <!-- STATS BAR -->
-  <div class="stats-bar">
-    <div class="stat"><span class="stat-num" id="totalCount">35+</span><span class="stat-label">Competitions Listed</span></div>
-    <div class="stat"><span class="stat-num">$2M+</span><span class="stat-label">Total Prize Pools</span></div>
-    <div class="stat"><span class="stat-num" id="openCount">8</span><span class="stat-label">Open Right Now</span></div>
-    <div class="stat"><span class="stat-num">7</span><span class="stat-label">Categories</span></div>
-  </div>
-
-  <!-- TOP PICKS -->
-  <div class="top-picks-banner">
-    <h3>🎯 Highest Expected Value for Your Profile (IISc AI/ML/Robotics)</h3>
-    <div class="picks-list">
-      <div class="pick-item"><span class="pick-rank">01</span> <span>Sponsor-track Devpost hackathons <span class="pick-reason">— win sub-prizes instead of overall; fewer competitors per track</span></span></div>
-      <div class="pick-item"><span class="pick-rank">02</span> <span>AIcrowd RL/robotics challenges <span class="pick-reason">— directly matches your RL + CV + simulation work</span></span></div>
-      <div class="pick-item"><span class="pick-rank">03</span> <span>Solafune satellite CV competitions <span class="pick-reason">— typically &lt;300 participants, real cash prizes</span></span></div>
-      <div class="pick-item"><span class="pick-rank">04</span> <span>Algora + Polar.sh open-source bounties <span class="pick-reason">— paid per task, no competition bracket, fast payouts</span></span></div>
-      <div class="pick-item"><span class="pick-rank">05</span> <span>Goldman Sachs India Hackathon (Quant) <span class="pick-reason">— IISc explicitly eligible; MacBook M5 + Pre-Placement Interview</span></span></div>
-    </div>
-  </div>
-
-  <!-- STRATEGY BANNER -->
-  <div class="strategy-banner">
-    <h3>Strategy Guide</h3>
-    <div class="strategy-grid">
-      <div class="strategy-tip"><strong>Avoid overcrowded arenas</strong>Kaggle mega-competitions have 10,000+ teams. Same skill wins more on Zindi, AIcrowd, or Solafune with 100–500 participants.</div>
-      <div class="strategy-tip"><strong>Target sponsor sub-tracks</strong>In large hackathons, don't fight for 1st overall. Pick one sponsor track and dominate it. These are judged separately with their own prize pool.</div>
-      <div class="strategy-tip"><strong>Your moat: cross-domain stack</strong>Combining embedded + robotics + CV + RL + edge AI is rare in hackathons. Projects at this intersection win sponsor tracks disproportionately.</div>
-      <div class="strategy-tip"><strong>AI tools = allowed (usually)</strong>Most modern hackathons expect you to use AI. Your edge is problem framing + domain knowledge, not writing boilerplate manually.</div>
-    </div>
-  </div>
-
-  <!-- LEGEND -->
-  <div class="legend">
-    <span class="legend-item"><span class="legend-dot" style="background:var(--open)"></span> Open Now</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--upcoming)"></span> Upcoming</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--recurring)"></span> Recurring</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--rolling)"></span> Rolling / Always Open</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--niche)"></span> Niche / Low-Competition</span>
-    <span class="legend-item"><span class="legend-dot" style="background:var(--bounty)"></span> Bounty Platform</span>
-  </div>
-
-  <!-- SEARCH -->
-  <div class="search-wrap">
-    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" class="search-input" id="searchInput" placeholder="Search competitions, platforms, prize amounts..." autocomplete="off">
-  </div>
-
-  <!-- FILTER BAR -->
-  <div class="filter-bar">
-    <span class="filter-label">Filter:</span>
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="open">Open Now</button>
-    <button class="filter-btn" data-filter="upcoming">Upcoming</button>
-    <button class="filter-btn" data-filter="recurring">Recurring</button>
-    <button class="filter-btn" data-filter="rolling">Rolling</button>
-    <button class="filter-btn" data-filter="niche">Niche</button>
-    <button class="filter-btn" data-filter="bounty">Bounties</button>
-    <button class="filter-btn" data-filter="india">India</button>
-  </div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 1: ALL HACKATHONS (Dynamically Loaded) -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section" id="sec-open">
-  <div class="section-head">
-    <h2>🎯 Available Hackathons</h2>
-    <span class="section-count" id="hackathonCount">Loading...</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="cards-grid" id="mainCardsGrid">
-    <p style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Loading hackathons...</p>
-  </div><!-- /cards-grid -->
-  </div><!-- /section open -->
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 2: RECURRING -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section" id="sec-recurring">
-  <div class="section-head">
-    <h2>🔄 Recurring Competitions — Build a Calendar</h2>
-    <span class="section-count">9 platforms</span>
-    <div class="section-line"></div>
-  </div>
-  <table class="platform-table">
-    <thead>
-      <tr>
-        <th>Platform</th>
-        <th>Frequency</th>
-        <th>Prize Range</th>
-        <th>Competition Level</th>
-        <th>AI Allowed</th>
-        <th>Best For</th>
-        <th>Link</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr data-cat="recurring">
-        <td><strong>Kaggle</strong></td>
-        <td>Weekly / Monthly</td>
-        <td class="meta-val prize">$1K – $100K</td>
-        <td><span class="comp-high">Very High</span></td>
-        <td>✅ Yes</td>
-        <td>ML · Data Science · NLP · CV</td>
-        <td><a href="https://www.kaggle.com/competitions" target="_blank">kaggle.com</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>Zindi</strong></td>
-        <td>Monthly</td>
-        <td class="meta-val prize">$500 – $50K</td>
-        <td><span class="comp-med">Medium</span></td>
-        <td>✅ Yes</td>
-        <td>ML · NLP · Climate AI</td>
-        <td><a href="https://zindi.africa/competitions" target="_blank">zindi.africa</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>AIcrowd</strong></td>
-        <td>Frequent</td>
-        <td class="meta-val prize">$1K – $100K</td>
-        <td><span class="comp-med">Medium-High</span></td>
-        <td>✅ Usually</td>
-        <td>RL · Robotics · LLM · CV — Best platform for your profile</td>
-        <td><a href="https://www.aicrowd.com/challenges" target="_blank">aicrowd.com</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>DrivenData</strong></td>
-        <td>Seasonal</td>
-        <td class="meta-val prize">$5K – $100K</td>
-        <td><span class="comp-med">Medium</span></td>
-        <td>✅ Yes</td>
-        <td>Social Impact ML · NASA · NOAA</td>
-        <td><a href="https://www.drivendata.org/competitions/" target="_blank">drivendata.org</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>HackerEarth</strong></td>
-        <td>Weekly</td>
-        <td class="meta-val prize">₹10K – ₹10L</td>
-        <td><span class="comp-med">Medium</span></td>
-        <td>✅ Yes</td>
-        <td>Corporate hackathons · Hiring challenges</td>
-        <td><a href="https://www.hackerearth.com/challenges/hackathon/" target="_blank">hackerearth.com</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>Devfolio</strong></td>
-        <td>Continuous</td>
-        <td class="meta-val prize">₹25K – ₹20L</td>
-        <td><span class="comp-med">Medium</span></td>
-        <td>✅ Yes</td>
-        <td>India AI/Web3/Systems hackathons</td>
-        <td><a href="https://devfolio.co/hackathons" target="_blank">devfolio.co</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>Unstop</strong></td>
-        <td>Continuous</td>
-        <td class="meta-val prize">₹5K – ₹5L</td>
-        <td><span class="comp-low">Low-Medium</span></td>
-        <td>✅ Yes</td>
-        <td>India corporate + college events · many low-participant slots</td>
-        <td><a href="https://unstop.com/hackathons/" target="_blank">unstop.com</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>MLH (Major League Hacking)</strong></td>
-        <td>Every weekend</td>
-        <td>Sponsor prizes</td>
-        <td><span class="comp-med">Medium-High</span></td>
-        <td>✅ Yes</td>
-        <td>Student hackathons · beginner to advanced</td>
-        <td><a href="https://mlh.io" target="_blank">mlh.io</a></td>
-      </tr>
-      <tr data-cat="recurring">
-        <td><strong>CodeChef</strong></td>
-        <td>Monthly (Long Challenge 10-day + CookOff)</td>
-        <td>Cash + rating</td>
-        <td><span class="comp-med">Medium</span></td>
-        <td>❌ No (algo contest)</td>
-        <td>Competitive Programming · DSA</td>
-        <td><a href="https://www.codechef.com/" target="_blank">codechef.com</a></td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 3: NICHE / LOW-COMPETITION -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section" id="sec-niche">
-  <div class="section-head">
-    <h2>💎 Niche & Low-Competition Platforms</h2>
-    <span class="section-count">7 platforms</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="cards-grid">
-
-    <!-- Solafune -->
-    <div class="card" data-cat="niche" data-tags="satellite cv geospatial ai low competition prize">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">Hidden Gem</span>
-          <span class="badge badge-rolling">Always Open</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://solafune.com/en/competitions" target="_blank">Solafune</a></div>
-        <div class="card-org">Solafune Inc. · Japan-based global platform</div>
-      </div>
-      <div class="card-desc">Satellite and geospatial AI competitions. Datasets include satellite imagery, environmental monitoring, land use analysis, and climate change challenges. Typically only 100–400 participants per competition — dramatically better odds than Kaggle. Your CV + edge inference background maps perfectly to satellite image segmentation and object detection tasks. Real cash prizes.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize Range</span><span class="meta-val prize">$500 – $10,000 per competition</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~100–400 (very low)</span></div>
-        <div class="meta-item"><span class="meta-key">Frequency</span><span class="meta-val">Multiple active at all times</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">CV · YOLOv8 · Satellite imagery</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Computer Vision</span><span class="tag">Satellite AI</span><span class="tag">Geospatial</span><span class="tag">Low Competition</span>
-      </div>
-      <a class="card-link" href="https://solafune.com/en/competitions" target="_blank">Browse Competitions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- EvalAI -->
-    <div class="card" data-cat="niche" data-tags="evalai research benchmark ai cv rl">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">Research Platform</span>
-          <span class="badge badge-rolling">Ongoing</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://eval.ai/web/challenges/challenge-page-list" target="_blank">EvalAI</a></div>
-        <div class="card-org">AI Research Community · CVPR / NeurIPS affiliated</div>
-      </div>
-      <div class="card-desc">Hosts AI benchmark challenges run by research labs — often tied to CVPR, NeurIPS, ICML workshops. Challenges cover CV, NLP, RL, robotics, and multimodal AI. Participation often leads to research visibility and paper citations even without cash prizes. Some challenges carry $5K–$20K rewards. Very few participants on niche benchmarks.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">$0 – $20,000 (varies) + research visibility</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~50–500 (very low on niche)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">CV · RL · Robotics benchmarks</span></div>
-        <div class="meta-item"><span class="meta-key">Affiliation</span><span class="meta-val">CVPR / NeurIPS workshops</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Benchmark Challenges</span><span class="tag">CV</span><span class="tag">RL</span><span class="tag">Research</span><span class="tag">Conference-linked</span>
-      </div>
-      <a class="card-link" href="https://eval.ai/web/challenges/challenge-page-list" target="_blank">Browse Challenges <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- CrowdANALYTIX -->
-    <div class="card" data-cat="niche" data-tags="ml enterprise crowdsourced analytics prize low">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">Hidden Gem</span>
-          <span class="badge badge-rolling">Ongoing</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.crowdanalytix.com/community" target="_blank">CrowdANALYTIX</a></div>
-        <div class="card-org">CrowdANALYTIX · Enterprise ML marketplace</div>
-      </div>
-      <div class="card-desc">Enterprise ML competitions — businesses post real analytics problems and pay for the best solution. Prize range $1K–$25K. Participant count is much lower than Kaggle (often under 200). Covers tabular ML, forecasting, and practical engineering problems. Very underexplored by Indian students.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize Range</span><span class="meta-val prize">$1,000 – $25,000</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~50–200 (very low)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">ML Engineering · Forecasting · Tabular</span></div>
-        <div class="meta-item"><span class="meta-key">Format</span><span class="meta-val">Leaderboard, fully remote</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Enterprise ML</span><span class="tag">Forecasting</span><span class="tag">Tabular</span><span class="tag">Low Competition</span>
-      </div>
-      <a class="card-link" href="https://www.crowdanalytix.com/community" target="_blank">Browse Problems <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- CodaLab -->
-    <div class="card" data-cat="niche" data-tags="codalab academic conference research cv nlp rl">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">Academic</span>
-          <span class="badge badge-rolling">Ongoing</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://codalab.lisn.upsaclay.fr/competitions/" target="_blank">CodaLab Competitions</a></div>
-        <div class="card-org">Université Paris-Saclay / Open Source</div>
-      </div>
-      <div class="card-desc">Open-source ML competition platform often hosting academic and conference-affiliated challenges. Covers CV, NLP, robotics, RL, and health AI. Strong resume value — winners often appear in workshop papers. Low participant counts on niche challenges. Any researcher can host a competition, meaning there are always new ones appearing.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">Variable ($0–$20K) + research recognition</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~30–300 (low)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">CV · NLP · Robotics · RL</span></div>
-        <div class="meta-item"><span class="meta-key">Affiliation</span><span class="meta-val">NeurIPS · EMNLP · ECCV workshops</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Academic ML</span><span class="tag">Conference Workshops</span><span class="tag">CV</span><span class="tag">NLP</span><span class="tag">Open Platform</span>
-      </div>
-      <a class="card-link" href="https://codalab.lisn.upsaclay.fr/competitions/" target="_blank">Browse Competitions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- HeroX -->
-    <div class="card" data-cat="niche" data-tags="herox innovation nasa prize 1000000 open challenge">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">Underrated</span>
-          <span class="badge badge-rolling">Rolling Challenges</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.herox.com/" target="_blank">HeroX Innovation Challenges</a></div>
-        <div class="card-org">HeroX · NASA / DARPA / Corporate-sponsored</div>
-      </div>
-      <div class="card-desc">NASA-style open innovation challenges posted by NASA, DARPA, corporations, and research agencies. Prize range is extraordinary — $1K to $1M depending on the challenge. Challenges cover engineering, AI, robotics, space, health, and sustainability. Very few people know about this platform. Competition is surprisingly low given the prize pools. Requires domain-specific creative solutions.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize Range</span><span class="meta-val prize">$1,000 – $1,000,000</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~50–2,000 (varies widely)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">Engineering · Robotics · AI · Space</span></div>
-        <div class="meta-item"><span class="meta-key">Frequency</span><span class="meta-val">Always multiple active challenges</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">NASA</span><span class="tag">Innovation</span><span class="tag">Engineering</span><span class="tag">AI</span><span class="tag">Space</span><span class="tag">Massive Prizes</span>
-      </div>
-      <a class="card-link" href="https://www.herox.com/" target="_blank">Browse Challenges <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- Lablab.ai -->
-    <div class="card" data-cat="niche" data-tags="lablab ai agent llm multimodal online prize">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">Underrated</span>
-          <span class="badge badge-recurring">Every 2–3 Weeks</span>
-          <span class="badge badge-ai">AI Core</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://lablab.ai/event-hackathons" target="_blank">Lablab.ai Hackathons</a></div>
-        <div class="card-org">Lablab.ai · 100K+ community globally</div>
-      </div>
-      <div class="card-desc">AI-agent hackathons built around using cutting-edge models (GPT, Claude, Mistral, Llama etc.) to build real applications. Events run every 2–3 weeks. Sponsor-backed prizes. Platform is fully built around AI usage — this is literally the point. Medium participant counts. Good for LLM agents, multimodal AI systems, and robotics copilots.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">Sponsor-backed cash + API credits</span></div>
-        <div class="meta-item"><span class="meta-key">Frequency</span><span class="meta-val">Every 2–3 weeks</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~500–3,000 (moderate)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">LLM Agents · Multimodal · Robotics copilot</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">LLM</span><span class="tag">AI Agents</span><span class="tag">Multimodal</span><span class="tag">Every 2–3 Weeks</span>
-      </div>
-      <a class="card-link" href="https://lablab.ai/event-hackathons" target="_blank">Find Events <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- Reskilll -->
-    <div class="card" data-cat="niche" data-tags="india reskilll hackathon low competition corporate prize">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-niche">India · Low Competition</span>
-          <span class="badge badge-india">India</span>
-          <span class="badge badge-recurring">Continuous</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://reskilll.com/allhacks" target="_blank">Reskilll India Hackathons</a></div>
-        <div class="card-org">Reskilll · India-focused platform</div>
-      </div>
-      <div class="card-desc">India-focused hackathon listing platform with lower competition than Devfolio. Frequent sponsor events from corporate sponsors. Many events have under 200 participants. Prize range ₹10K–₹5L. This is where a polished project punches way above its weight. Good for quick weekend builds.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize Range</span><span class="meta-val prize">₹10,000 – ₹5,00,000</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~50–500 (very low)</span></div>
-        <div class="meta-item"><span class="meta-key">Frequency</span><span class="meta-val">Continuous listing</span></div>
-        <div class="meta-item"><span class="meta-key">Location</span><span class="meta-val">India, mostly remote</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">India</span><span class="tag">Corporate Sponsors</span><span class="tag">Low Competition</span><span class="tag">Quick Builds</span>
-      </div>
-      <a class="card-link" href="https://reskilll.com/allhacks" target="_blank">Browse Hackathons <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-  </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 4: ROLLING / LONG-RUNNING -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section" id="sec-rolling">
-  <div class="section-head">
-    <h2>♾️ Rolling / Long-Running Competitions</h2>
-    <span class="section-count">4 platforms</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="cards-grid">
-
-    <!-- Numerai -->
-    <div class="card" data-cat="rolling" data-tags="numerai quant ml weekly crypto passive income">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-rolling">Weekly Payouts</span>
-          <span class="badge badge-ai">AI Core</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://numer.ai/" target="_blank">Numerai</a></div>
-        <div class="card-org">Numerai · Crowd-sourced hedge fund</div>
-      </div>
-      <div class="card-desc">Crowd-sourced quantitative hedge fund that has paid out over $44M to data scientists since inception. You build ML models to predict financial markets, stake NMR crypto on your predictions, and earn weekly if your model performs well. Once you have a strong model running, this is the closest thing to passive income in the competition world. Runs indefinitely.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Payout</span><span class="meta-val prize">NMR crypto · weekly (staking rewards)</span></div>
-        <div class="meta-item"><span class="meta-key">Frequency</span><span class="meta-val">Every week, always open</span></div>
-        <div class="meta-item"><span class="meta-key">Total Paid Out</span><span class="meta-val">$44M+ since inception</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">Advanced ML · Financial prediction</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Quant Finance</span><span class="tag">ML</span><span class="tag">Crypto Staking</span><span class="tag">Passive Income</span>
-      </div>
-      <a class="card-link" href="https://numer.ai/" target="_blank">Join Numerai <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- Topcoder -->
-    <div class="card" data-cat="rolling" data-tags="topcoder daily challenges ml software ui bug prize">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-rolling">Daily Challenges</span>
-          <span class="badge badge-ai">Depends on Task</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.topcoder.com/challenges" target="_blank">Topcoder Challenges</a></div>
-        <div class="card-org">Topcoder · 1.9M developers · NASA / Microsoft / Adobe</div>
-      </div>
-      <div class="card-desc">Daily paid challenges posted by companies like NASA, Microsoft, and Adobe. Covers ML model building, software development, UI/UX, bug hunting, and algorithm design. Individual challenges often have under 50 participants. Prize per task: $50–$10K. Excellent for supplementing income steadily with targeted effort. Many sub-challenges go completely unnoticed.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">$50 – $10,000 per challenge</span></div>
-        <div class="meta-item"><span class="meta-key">Frequency</span><span class="meta-val">New tasks every day</span></div>
-        <div class="meta-item"><span class="meta-key">Participants</span><span class="meta-val">~5–100 per challenge (very low)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">ML · Software Dev · UI</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Daily Tasks</span><span class="tag">ML</span><span class="tag">Software</span><span class="tag">NASA</span><span class="tag">Microsoft</span>
-      </div>
-      <a class="card-link" href="https://www.topcoder.com/challenges" target="_blank">Browse Daily Challenges <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- DrivenData -->
-    <div class="card" data-cat="rolling" data-tags="drivendata ml social nasa noaa impact prize medium">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-rolling">Seasonal — Always Active</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.drivendata.org/competitions/" target="_blank">DrivenData</a></div>
-        <div class="card-org">DrivenData · 100K users · NASA / Meta / NOAA</div>
-      </div>
-      <div class="card-desc">Social-impact ML competitions funded by NASA, Meta, NOAA, and similar organizations. Always has 3–6 active competitions with real cash prizes. Detailed write-ups of winning solutions after each event — good for learning strategy. ~100K users vs Kaggle's 10M means far better odds per competition. High-quality datasets on public health, climate, and education.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize Range</span><span class="meta-val prize">$5,000 – $100,000</span></div>
-        <div class="meta-item"><span class="meta-key">Users</span><span class="meta-val">~100K (vs Kaggle's 10M)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">Climate AI · Health ML · NASA challenges</span></div>
-        <div class="meta-item"><span class="meta-key">Sponsors</span><span class="meta-val">NASA · Meta · NOAA · Microsoft</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Social Impact</span><span class="tag">Climate AI</span><span class="tag">Health</span><span class="tag">NASA</span><span class="tag">Better Odds</span>
-      </div>
-      <a class="card-link" href="https://www.drivendata.org/competitions/" target="_blank">Browse Competitions <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- AIcrowd -->
-    <div class="card" data-cat="rolling" data-tags="aicrowd rl robotics llm cv neurips prize medium">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-rolling">Ongoing</span>
-          <span class="badge badge-niche">Best Platform for Your Profile</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.aicrowd.com/challenges" target="_blank">AIcrowd</a></div>
-        <div class="card-org">AIcrowd · EPFL-origin · NeurIPS affiliated · 60K+ users</div>
-      </div>
-      <div class="card-desc">One of the best competition platforms for your exact profile. Regularly hosts RL challenges, robotics simulations, LLM benchmarks, and CV challenges — many officially affiliated with NeurIPS and other top conferences. ~60K users means competition is a fraction of Kaggle. Prize pools up to $100K. Has hosted challenges for Meta, Amazon, and research institutes directly.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize Range</span><span class="meta-val prize">$1,000 – $100,000</span></div>
-        <div class="meta-item"><span class="meta-key">Users</span><span class="meta-val">~60K (17x fewer than Kaggle)</span></div>
-        <div class="meta-item"><span class="meta-key">Best Match</span><span class="meta-val">RL · Robotics · LLM · CV — perfect fit</span></div>
-        <div class="meta-item"><span class="meta-key">Affiliation</span><span class="meta-val">NeurIPS · Meta · Amazon</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">RL Challenges</span><span class="tag">Robotics</span><span class="tag">LLM</span><span class="tag">CV</span><span class="tag">NeurIPS</span>
-      </div>
-      <a class="card-link" href="https://www.aicrowd.com/challenges" target="_blank">Browse Challenges <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-  </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 5: BOUNTY PLATFORMS -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section" id="sec-bounty">
-  <div class="section-head">
-    <h2>💰 Open-Source Bounty Platforms — Steadiest Income</h2>
-    <span class="section-count">5 platforms</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="strategy-banner" style="margin-bottom:16px;border-color:rgba(255,133,194,0.2);background:linear-gradient(135deg,rgba(255,133,194,0.06) 0%,rgba(255,92,53,0.04) 100%);">
-    <h3 style="color:var(--bounty)">Why Bounties Beat Most Hackathons for Steady Income</h3>
-    <p style="font-size:12px;color:#8896b0;margin-top:6px;">No competition bracket — you either fix it or you don't. Paid per task. Multiple active tasks at once. No waiting for event dates. Your GitHub reputation compounds over time. Best for someone with strong Python, ML tooling, and robotics/CV open-source skills.</p>
-  </div>
-  <table class="platform-table">
-    <thead>
-      <tr><th>Platform</th><th>Typical Payout</th><th>Difficulty</th><th>Competition</th><th>Notes</th><th>Link</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Algora</strong></td>
-        <td class="meta-val prize">$20 – $5,000</td>
-        <td>Medium</td>
-        <td><span class="comp-low">Low (first to fix wins)</span></td>
-        <td>Fast-growing, modern, many AI/ML repos actively posting bounties</td>
-        <td><a href="https://algora.io/bounties" target="_blank">algora.io</a></td>
-      </tr>
-      <tr>
-        <td><strong>Polar.sh</strong></td>
-        <td class="meta-val prize">$20 – $10,000</td>
-        <td>Medium</td>
-        <td><span class="comp-low">Low</span></td>
-        <td>Very promising new platform, integrates with GitHub, quick payouts</td>
-        <td><a href="https://polar.sh/" target="_blank">polar.sh</a></td>
-      </tr>
-      <tr>
-        <td><strong>IssueHunt</strong></td>
-        <td class="meta-val prize">$10 – $5,000</td>
-        <td>Medium</td>
-        <td><span class="comp-low">Low</span></td>
-        <td>GitHub-integrated, straightforward payout on merge</td>
-        <td><a href="https://issuehunt.io/" target="_blank">issuehunt.io</a></td>
-      </tr>
-      <tr>
-        <td><strong>Gitcoin</strong></td>
-        <td class="meta-val prize">$50 – $50,000</td>
-        <td>Medium-High</td>
-        <td><span class="comp-med">Medium</span></td>
-        <td>Web3-heavy, large prize potential, some AI infra bounties</td>
-        <td><a href="https://gitcoin.co/" target="_blank">gitcoin.co</a></td>
-      </tr>
-      <tr>
-        <td><strong>Bountysource</strong></td>
-        <td>Variable</td>
-        <td>Medium</td>
-        <td><span class="comp-low">Low</span></td>
-        <td>Older ecosystem, still active for some major OSS projects</td>
-        <td><a href="https://www.bountysource.com/" target="_blank">bountysource.com</a></td>
-      </tr>
-    </tbody>
-  </table>
-  </div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- SECTION 6: INDIA-SPECIFIC ANNUAL EVENTS -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section" id="sec-india">
-  <div class="section-head">
-    <h2>🇮🇳 India-Specific Annual Events</h2>
-    <span class="section-count">5 events</span>
-    <div class="section-line"></div>
-  </div>
-  <div class="cards-grid">
-
-    <!-- SIH -->
-    <div class="card" data-cat="upcoming" data-tags="india sih government team hackathon prize 1lakh annual">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-india">India</span>
-          <span class="badge badge-upcoming">Annual · Aug–Dec</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.sih.gov.in/" target="_blank">Smart India Hackathon (SIH)</a></div>
-        <div class="card-org">Govt. of India · AICTE · Ministry of Education</div>
-      </div>
-      <div class="card-desc">India's largest national-level hackathon, government-backed, runs every year. 36-hour team event (6 members) solving real problem statements from central ministries, PSUs, and industry. IISc background gives significant credibility. Registration typically opens July–August, finals November–December. Software and hardware editions run in parallel.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">₹1,00,000 per winning team + certificates</span></div>
-        <div class="meta-item"><span class="meta-key">Timeline</span><span class="meta-val">Reg: ~Aug · Finals: ~Nov–Dec annually</span></div>
-        <div class="meta-item"><span class="meta-key">Team</span><span class="meta-val">6 members</span></div>
-        <div class="meta-item"><span class="meta-key">Competition</span><span class="meta-val">High — but IISc team stands out</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Government</span><span class="tag">Team Event</span><span class="tag">36-hour</span><span class="tag">National</span>
-      </div>
-      <a class="card-link" href="https://www.sih.gov.in/" target="_blank">SIH Official Site <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- The Big Code (Google) -->
-    <div class="card" data-cat="upcoming" data-tags="google india coding algo prize 600000 annual pixel">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-india">India</span>
-          <span class="badge badge-upcoming">Annual · March–April</span>
-          <span class="badge badge-noai">No AI (Algo Contest)</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.hackerearth.com/challenges/" target="_blank">Google "The Big Code" 2026</a></div>
-        <div class="card-org">Google India · via HackerEarth</div>
-      </div>
-      <div class="card-desc">Google India's annual individual coding competition — 5 elimination rounds from MCQs to a 48-hour AI hackathon for top 50. Top 15 present live at Google Bengaluru. IISc (M.Tech CS/ECE/EE) is eligible. Top 50 finalists receive Pixel devices; top 10 share ₹6L cash. The final round is AI-themed — directly relevant to your profile.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">₹6,00,000 total · Pixel devices for top 50</span></div>
-        <div class="meta-item"><span class="meta-key">Timeline</span><span class="meta-val">~March–April annually</span></div>
-        <div class="meta-item"><span class="meta-key">Format</span><span class="meta-val">Individual · 5 elimination rounds</span></div>
-        <div class="meta-item"><span class="meta-key">Final Round</span><span class="meta-val">Live presentation at Google Bengaluru</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">Google India</span><span class="tag">Individual</span><span class="tag">Algo + AI Final</span><span class="tag">IISc Eligible</span>
-      </div>
-      <a class="card-link" href="https://www.hackerearth.com/challenges/" target="_blank">Watch HackerEarth <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- Inter-IIT Tech Meet -->
-    <div class="card" data-cat="upcoming" data-tags="india iisc iit inter team competition annual prestige">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-india">India · IISc Eligible</span>
-          <span class="badge badge-upcoming">Annual · Nov–Dec</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.iit.ac.in/" target="_blank">Inter-IIT Tech Meet</a></div>
-        <div class="card-org">IIT Consortium · IISc participates</div>
-      </div>
-      <div class="card-desc">Prestigious inter-institute technical competition across IITs and IISc. Problems are set by companies including major tech firms, defense organizations, and research agencies. IISc teams regularly compete and perform well. Covers ML, robotics, CV, and software engineering challenges. Strong resume value — winning team members are tracked by recruiters.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">Trophies + company-sponsored prizes</span></div>
-        <div class="meta-item"><span class="meta-key">Timeline</span><span class="meta-val">~November–December annually</span></div>
-        <div class="meta-item"><span class="meta-key">Team</span><span class="meta-val">Institute team</span></div>
-        <div class="meta-item"><span class="meta-key">Value</span><span class="meta-val">Prestige + recruiter visibility</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">IISc</span><span class="tag">Prestigious</span><span class="tag">Team</span><span class="tag">ML + Robotics Tracks</span>
-      </div>
-      <a class="card-link" href="https://unstop.com/hackathons/" target="_blank">Track on Unstop <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- ET x Unstop AI -->
-    <div class="card" data-cat="open" data-tags="india unstop economic times ai prize 10lakh national">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-india">India</span>
-          <span class="badge badge-open">Check Status</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://unstop.com/hackathons/" target="_blank">Economic Times × Unstop AI Hackathon</a></div>
-        <div class="card-org">Economic Times · Unstop · National</div>
-      </div>
-      <div class="card-desc">Nation-scale AI hackathon by Economic Times and Unstop — one of India's largest. Open to students and professionals. Prize pool ₹10 lakh + career opportunities. Fully online. Check Unstop for current status and registration window, as new editions launch periodically throughout the year.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">₹10,00,000 prize pool</span></div>
-        <div class="meta-item"><span class="meta-key">Format</span><span class="meta-val">Fully online, national</span></div>
-        <div class="meta-item"><span class="meta-key">Check</span><span class="meta-val">unstop.com for live registration</span></div>
-        <div class="meta-item"><span class="meta-key">Eligibility</span><span class="meta-val">Students + Professionals</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">India</span><span class="tag">AI</span><span class="tag">₹10L Prize</span><span class="tag">National Scale</span>
-      </div>
-      <a class="card-link" href="https://unstop.com/hackathons/" target="_blank">Check on Unstop <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-    <!-- NASA Space Apps -->
-    <div class="card" data-cat="upcoming" data-tags="nasa space apps annual october global online prize">
-      <div class="card-top">
-        <div class="card-badges">
-          <span class="badge badge-upcoming">Annual · October</span>
-          <span class="badge badge-ai">AI Allowed</span>
-        </div>
-      </div>
-      <div>
-        <div class="card-title"><a href="https://www.spaceappschallenge.org/" target="_blank">NASA Space Apps Challenge</a></div>
-        <div class="card-org">NASA · Global · 150+ countries</div>
-      </div>
-      <div class="card-desc">World's largest annual hackathon — 150+ countries, fully remote participation. NASA provides datasets, APIs, and open problems. 48-hour sprint in October. Categories include Earth, Space Station, Moon, and Universe. Strong AI/ML + satellite data + CV skills are highly competitive. Global winners get trips to NASA facilities.</div>
-      <div class="card-meta">
-        <div class="meta-item"><span class="meta-key">Prize</span><span class="meta-val prize">Trip to NASA + global recognition</span></div>
-        <div class="meta-item"><span class="meta-key">Timeline</span><span class="meta-val">Every October (48h sprint)</span></div>
-        <div class="meta-item"><span class="meta-key">Team</span><span class="meta-val">1–6 members</span></div>
-        <div class="meta-item"><span class="meta-key">Format</span><span class="meta-val">Global, local hubs + fully remote</span></div>
-      </div>
-      <div class="card-tags">
-        <span class="tag">NASA</span><span class="tag">October Annual</span><span class="tag">Global</span><span class="tag">Space + AI</span><span class="tag">48h Sprint</span>
-      </div>
-      <a class="card-link" href="https://www.spaceappschallenge.org/" target="_blank">NASA Space Apps <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
-    </div>
-
-  </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- QUICK REFERENCE CALENDAR -->
-  <!-- ═══════════════════════════════════════════ -->
-  <div class="section-head" style="margin-top:48px;">
-    <h2>📅 Annual Competition Calendar</h2>
-    <div class="section-line"></div>
-  </div>
-  <table class="platform-table" style="margin-bottom:48px;">
-    <thead>
-      <tr><th>Month(s)</th><th>Event</th><th>Type</th><th>Prize / Value</th><th>Action</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>May 2026</td><td>Goldman Sachs India Hackathon (Quant: May 23, CS: May 24)</td><td>Coding Contest</td><td class="meta-val prize">MacBook M5 + PPI</td><td><a href="https://www.goldmansachs.com/careers/students/programs-and-internships/india/hackathon" target="_blank">Register</a></td></tr>
-      <tr><td>May 28, 2026</td><td>DevNetwork AI+ML Hackathon — deadline</td><td>Build Hackathon</td><td class="meta-val prize">Sponsor prizes</td><td><a href="https://devnetwork-ai-ml-hack-2026.devpost.com/" target="_blank">Submit</a></td></tr>
-      <tr><td>June 16, 2026</td><td>Hull Tactical Kaggle Competition ends</td><td>ML Contest</td><td class="meta-val prize">$100K pool</td><td><a href="https://www.kaggle.com/competitions" target="_blank">Compete</a></td></tr>
-      <tr><td>June 30, 2026</td><td>ARC Prize 2026 — Milestone 1 deadline</td><td>AI Research</td><td class="meta-val prize">$25K (1st)</td><td><a href="https://arcprize.org/" target="_blank">Submit</a></td></tr>
-      <tr><td>Every month</td><td>Zindi + AIcrowd + DrivenData competitions</td><td>ML Leaderboard</td><td class="meta-val prize">$500 – $100K</td><td><a href="https://zindi.africa/competitions" target="_blank">Check</a></td></tr>
-      <tr><td>Every week</td><td>MLH Virtual Hackathons</td><td>Hackathon</td><td>Sponsor prizes</td><td><a href="https://mlh.io" target="_blank">Register</a></td></tr>
-      <tr><td>Every week</td><td>Topcoder Daily Challenges + Lablab.ai events</td><td>Mixed</td><td class="meta-val prize">$50–$10K per task</td><td><a href="https://www.topcoder.com/challenges" target="_blank">Browse</a></td></tr>
-      <tr><td>~August</td><td>Smart India Hackathon — registration opens</td><td>National Hackathon</td><td class="meta-val prize">₹1L per team</td><td><a href="https://www.sih.gov.in/" target="_blank">Watch</a></td></tr>
-      <tr><td>~September</td><td>ARC Prize 2026 — Milestone 2</td><td>AI Research</td><td class="meta-val prize">$25K (1st)</td><td><a href="https://arcprize.org/" target="_blank">Submit</a></td></tr>
-      <tr><td>October</td><td>NASA Space Apps Challenge (every year)</td><td>Global Hackathon</td><td>NASA trip + recognition</td><td><a href="https://www.spaceappschallenge.org/" target="_blank">Register</a></td></tr>
-      <tr><td>~Nov–Dec</td><td>Smart India Hackathon Finals</td><td>National</td><td class="meta-val prize">₹1L per team</td><td><a href="https://www.sih.gov.in/" target="_blank">Participate</a></td></tr>
-      <tr><td>~Nov–Dec</td><td>Inter-IIT Tech Meet</td><td>Inter-Institute</td><td>Prestige + Prizes</td><td>Via IISc team</td></tr>
-      <tr><td>~March–April</td><td>Google "The Big Code" (annual, next ed. 2027)</td><td>Coding + AI Final</td><td class="meta-val prize">₹6L + Pixel devices</td><td><a href="https://www.hackerearth.com/challenges/" target="_blank">Watch HackerEarth</a></td></tr>
-    </tbody>
-  </table>
-
-</div><!-- /wrap -->
-</main>
-
-<footer>
-  <div class="wrap">
-    <div class="footer-inner">
-      <p>HackTrack — personal competition tracker · IISc RBCCPS M.Tech · Bengaluru, India</p>
-      <p>Update this file by editing <code>hackathon-tracker.html</code> in your GitHub repo · Last updated: <span id="footerDate">May 14, 2026</span></p>
-      <p>Sources: <a href="https://devpost.com/hackathons" target="_blank">Devpost</a> · <a href="https://kaggle.com/competitions" target="_blank">Kaggle</a> · <a href="https://unstop.com/hackathons/" target="_blank">Unstop</a> · <a href="https://zindi.africa/competitions" target="_blank">Zindi</a></p>
-    </div>
-  </div>
-</footer>
-
-<script>
-// Load modular scripts for the new API-based system
-// Scripts in order: API communication → Main app logic → Filter utilities
-</script>
-
-<!-- API Communication Module -->
-<script src="js/api.js"></script>
-
-<!-- Main Application Logic -->
-<script src="js/main.js"></script>
-
-<!-- Filter Utilities (optional, for advanced filtering) -->
-<script src="js/filters.js"></script>
-
-<script>
-// Fallback: If backend is not available, use local demo data
-window.addEventListener('load', async () => {
-  const health = await API.healthCheck();
-  if (health.status !== 'ok') {
-    console.warn('⚠️ Backend not available. Running in demo mode with static data.');
-    // The app will still work with sample data from data/hackathons.json
-  }
-});
-
-// Add slide-in animation for notifications
-const style = document.createElement('style');
-style.innerHTML = `
-  @keyframes slideIn {
-    from {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-  }
-  #updateBtn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-document.head.appendChild(style);
-</script>
-</body>
-</html>
-</file>
-
 <file path=".env.example">
-# Server Configuration
-PORT=5000
-NODE_ENV=development
+# ─── HackTrack Environment ───
+PORT=5001
 
-# API Keys (optional, for enhanced scraping)
-KAGGLE_API_KEY=your_kaggle_api_key_here
-DEVPOST_API_KEY=your_devpost_api_key_here
-
-# Database (if using MongoDB later)
-MONGODB_URI=mongodb://localhost:27017/hackathon-tracker
-
-# Frontend
-REACT_APP_API_URL=http://localhost:5000/api
+# Get a FREE key at: https://aistudio.google.com/app/apikey
+GEMINI_API_KEY=your_gemini_api_key_here
 </file>
 
 <file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node
 node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Env
 .env
 .env.local
-*.log
-.DS_Store
-dist/
-build/
+.dev.vars
+
+# Wrangler / Cloudflare
+.wrangler/
+
+# Editor directories and files
 .vscode/
+!.vscode/extensions.json
 .idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *.swp
 *.swo
 </file>
 
-<file path="ARCHITECTURE.md">
-# 🎯 HackTrack Architecture & Design Decisions
-
-## Your Original Questions Answered
-
-### Q1: "Is it possible to make a live hackathon tracker that fetches data from different websites?"
-
-**Answer: YES, with a caveat about CORS**
-
-**The Challenge:**
-- Direct fetching from websites in browser JS won't work due to CORS (Cross-Origin Resource Sharing)
-- Example: `fetch('https://www.kaggle.com/api/...')` will be **blocked by browser**
-
-**The Solution:**
-Build a backend server that does the fetching. Here's how:
-
-```
-Browser → API Call → Node.js Backend → Kaggle/Devpost/Unstop → Parse Data → Send back to Browser
-```
-
-This is exactly what we've built for you.
-
----
-
-### Q2: "Should I use native JS or a framework?"
-
-**Answer: We chose VANILLA JS (Your choice was perfect!)**
-
-**Why:**
-✅ Lightweight - no build step needed
-✅ Responsive - pure CSS Grid and Flexbox
-✅ Fast - no framework overhead
-✅ Educational - see exactly what's happening
-✅ Scalable - easy to add frameworks later if needed
-
-**If you need to scale later:**
-- Add React.js for complex state management
-- Add Vue.js for reactive data binding
-- Add TypeScript for type safety
-
-But for now: **Vanilla JS is the right choice**. It's simpler and doesn't hide how things work.
-
----
-
-### Q3: "How does the 'Update' button work to fetch data from different websites?"
-
-**Current Implementation:**
-
-```javascript
-// 1. User clicks "🔄 Update" button
-// ↓
-// 2. Frontend sends POST request to backend
-POST /api/hackathons/refresh
-// ↓
-// 3. Backend triggers scraper.js
-// ↓
-// 4. Scraper fetches from multiple sources:
-//    - Kaggle API
-//    - Devpost JSON endpoint
-//    - Unstop (if implemented)
-// ↓
-// 5. Backend parses & aggregates data
-// ↓
-// 6. Saves to data/hackathons.json
-// ↓
-// 7. Backend returns {"success": true, "lastUpdated": "..."}
-// ↓
-// 8. Frontend reloads and displays new data
-```
-
-**Flow Diagram:**
-```
-┌─────────────┐
-│  Update btn │ User clicks
-└──────┬──────┘
-       │ onClick
-       ▼
-┌──────────────────────────────┐
-│ API.refreshData() [api.js]   │ Frontend initiates
-└──────┬───────────────────────┘
-       │ POST /api/hackathons/refresh
-       ▼
-┌──────────────────────────────┐
-│ backend/routes/hackathons.js │ Backend receives
-└──────┬───────────────────────┘
-       │ Calls scraper
-       ▼
-┌──────────────────────────────┐
-│ backend/scraper.js           │ Main logic
-├──────────────────────────────┤
-│ fetchFromKaggle()            │ Calls Kaggle API
-│ fetchFromDevPost()           │ Calls Devpost API
-│ fetchFromUnstop()            │ (Ready for scraping)
-└──────┬───────────────────────┘
-       │ Aggregates results
-       ▼
-┌──────────────────────────────┐
-│ data/hackathons.json         │ Writes to storage
-└──────┬───────────────────────┘
-       │ Returns success
-       ▼
-┌──────────────────────────────┐
-│ Frontend reloads data         │ UI updates
-└──────────────────────────────┘
-```
-
----
-
-### Q4: "Should it show a timeline and add new hackathons dynamically?"
-
-**Answer: YES - We've set it up for this!**
-
-**What's Ready Now:**
-- ✅ Cards with all hackathon metadata (name, deadline, platform, etc.)
-- ✅ Dynamic card generation from data
-- ✅ Filter buttons (by category/type)
-- ✅ Search functionality
-
-**What You Can Add:**
-1. **Timeline View**
-   - Add a calendar component showing deadlines
-   - Use library like `fullcalendar.js` or build custom
-   - Color-code by category
-
-2. **Automatic Addition**
-   - Already built-in! When scraper runs, new hackathons auto-add to JSON
-   - Frontend doesn't need changes - just reload
-
-3. **Auto-Update Schedule**
-   - Use GitHub Actions to run scraper daily
-   - Or deploy cron job on backend
-
----
-
-## 🏗️ Architecture Deep Dive
-
-### Layer 1: Frontend (Public-Facing)
-```
-public/index.html
-    ├── CSS Grid responsive design
-    ├── Dark theme with accent colors
-    └── Dynamic card rendering
-
-public/js/api.js (Module)
-    └── API communication abstraction
-        - getHackathons(filter, search, page, limit)
-        - refreshData()
-        - addHackathon(data)
-        - deleteHackathon(id)
-        - healthCheck()
-
-public/js/main.js (Core App)
-    ├── HackTracker class
-    ├── Event listeners
-    ├── Data loading & filtering
-    └── UI updates
-
-public/js/filters.js (Utilities)
-    └── Advanced filtering functions
-```
-
-### Layer 2: Backend (Node.js + Express)
-```
-backend/server.js
-    ├── Express app setup
-    ├── CORS middleware
-    ├── Static file serving
-    └── Route mounting
-
-backend/routes/hackathons.js (REST API)
-    ├── GET /api/hackathons              → List all
-    ├── GET /api/hackathons/:id          → Get one
-    ├── POST /api/hackathons             → Create
-    ├── DELETE /api/hackathons/:id       → Delete
-    ├── POST /api/hackathons/refresh     → Trigger scrape
-    └── GET /api/health                  → Check if alive
-
-backend/scraper.js (Data Fetcher)
-    ├── fetchFromKaggle()
-    ├── fetchFromDevPost()
-    ├── fetchFromUnstop()
-    ├── transformHackathon()
-    └── scrapeHackathons() [Main function]
-```
-
-### Layer 3: Data Storage
-```
-data/hackathons.json
-    ├── hackathons array (with full details)
-    ├── lastUpdated timestamp
-    ├── totalCount
-    ├── sourcesFetched
-    └── metadata
-```
-
----
-
-## 🔄 Data Flow for Live Updates
-
-### Scenario: User clicks "Update" at 2 PM
-
-**Step 1: Frontend → Backend**
-```javascript
-// public/js/main.js
-button.onClick → API.refreshData()
-                → fetch('http://localhost:5000/api/hackathons/refresh', {method: 'POST'})
-```
-
-**Step 2: Backend Receives & Starts Scraping**
-```javascript
-// backend/routes/hackathons.js
-POST /hackathons/refresh
-→ require('./scraper.js').scrapeHackathons()
-→ Calls fetchFromKaggle(), fetchFromDevPost(), etc.
-```
-
-**Step 3: Scraper Fetches from Sources**
-```javascript
-// backend/scraper.js
-fetchFromKaggle()
-  → axios.get('https://www.kaggle.com/api/v1/competitions/list')
-  → Returns array of competitions
-  
-transformHackathon() → Converts to standard format
-  {
-    id: 'hack_kaggle_123',
-    name: 'Competition Name',
-    category: 'open',
-    deadline: '2026-06-30T23:59:59Z',
-    prizeRange: '$50,000',
-    url: 'https://...',
-    aiAllowed: true,
-    ...
-  }
-```
-
-**Step 4: Save & Respond**
-```javascript
-fs.writeFileSync('data/hackathons.json', JSON.stringify(merged), 'utf8')
-res.json({ success: true, lastUpdated: new Date() })
-```
-
-**Step 5: Frontend Updates UI**
-```javascript
-// public/js/main.js
-→ Receives success response
-→ Calls loadHackathons() again
-→ Cards re-render with new data
-→ Stats update
-→ "Updating..." button returns to normal
-```
-
----
-
-## 🎯 How Remote Hackathons Are Detected
-
-Currently: Manual tagging in data
-```json
-{
-  "remote": true,          // Boolean flag
-  "url": "https://...",    // Link to event
-  "platform": "Devpost"    // Source platform
-}
-```
-
-**How to Auto-Detect:**
-```javascript
-// In scraper.js - check multiple signals
-function isRemote(hackathon) {
-  return (
-    hackathon.location === 'Virtual' ||
-    hackathon.location === 'Online' ||
-    hackathon.format.includes('remote') ||
-    hackathon.format.includes('virtual') ||
-    !hackathon.location // If no location = likely virtual
-  )
-}
-```
-
----
-
-## 🌐 Multi-Source Integration (Scalable Design)
-
-The architecture is designed to add sources easily:
-
-```javascript
-// backend/scraper.js - To add a new source:
-
-async function fetchFromNewPlatform() {
-  try {
-    console.log('📊 Fetching from NewPlatform...');
-    const response = await axios.get('https://api.newplatform.com/competitions', {
-      params: { limit: 100 },
-      timeout: 5000
-    });
-    return response.data.competitions || [];
-  } catch (err) {
-    console.error('❌ Error fetching from NewPlatform:', err.message);
-    return [];
-  }
-}
-
-async function scrapeHackathons() {
-  // Add new source
-  const newPlatform = await fetchFromNewPlatform();
-  
-  // Transform
-  const transformed = newPlatform
-    .map(h => transformHackathon(h, 'newplatform'))
-    .slice(0, 10);
-  
-  // Merge with existing
-  allHackathons = [...transformed, ...existingHackathons];
-  
-  // Save
-  writeHackathons({
-    hackathons: allHackathons,
-    lastUpdated: new Date(),
-    sourcesFetched: ['kaggle', 'devpost', 'newplatform']
-  });
-}
-```
-
----
-
-## 📈 Future Scaling Path
-
-```
-MVP (Now)                 Growth Phase              Production
-├── JSON storage          ├── MongoDB              ├── PostgreSQL
-├── Single server         ├── Redis cache          ├── Kubernetes
-├── Manual update         ├── GitHub Actions       ├── Auto-scaling
-└── localhost:5000        ├── Vercel + Railway     └── CDN + load balancing
-```
-
----
-
-## ✅ Your Tech Stack Validated
-
-```
-Frontend:
-├── Vanilla JavaScript (no frameworks) ✅
-├── HTML5 semantic markup ✅
-├── CSS Grid + Flexbox (responsive) ✅
-└── SVG icons (crisp & scalable) ✅
-
-Backend:
-├── Node.js + Express ✅
-├── Axios (HTTP client) ✅
-├── Cheerio (web scraping) ✅
-└── File-based storage (JSON) ✅
-
-Deployment:
-├── GitHub (version control) ✅
-├── Frontend: Vercel/GitHub Pages ✅
-├── Backend: Railway/Render ✅
-└── Data: JSON → MongoDB (upgrade path) ✅
-```
-
-**This is a solid, modern tech stack. Good choices! 🎉**
-
----
-
-## 🚀 Ready to Launch?
-
-1. **Test locally**: `npm run dev`
-2. **Add real data**: `npm run fetch`
-3. **Deploy backend**: Push to Railway
-4. **Deploy frontend**: Push to Vercel
-5. **Go live**: Share the URL!
-
-You have everything you need. The rest is just connecting APIs and deploying.
-
-**You've got this! 🙌**
-</file>
-
-<file path="CHECKLIST.md">
-# ✅ HackTrack Project Checklist
-
-## What's Been Done For You ✅
-
-### Project Structure
-- [x] Folder organization (backend, public, data, src)
-- [x] Moved HTML to `public/index.html`
-- [x] Separated concerns: frontend, backend, data
-
-### Frontend (Vanilla JS) ✅
-- [x] Responsive HTML/CSS (dark theme, grid layout)
-- [x] Dynamic card rendering from API
-- [x] Filter buttons (all, open, upcoming, recurring, etc.)
-- [x] Search functionality
-- [x] "🔄 Update" button in header
-- [x] Loading states and UI feedback
-- [x] Mobile-responsive design
-- [x] Notification system for user feedback
-
-### Backend (Node.js + Express) ✅
-- [x] Express server setup
-- [x] CORS enabled for frontend requests
-- [x] REST API with 5 endpoints:
-  - GET /api/hackathons (list with filters)
-  - GET /api/hackathons/:id (details)
-  - POST /api/hackathons (create)
-  - DELETE /api/hackathons/:id (delete)
-  - POST /api/hackathons/refresh (trigger update)
-- [x] Health check endpoint
-- [x] Error handling middleware
-- [x] File-based JSON storage (ready for MongoDB upgrade)
-
-### Data & Scraping ✅
-- [x] Sample hackathon data in JSON format
-- [x] Scraper skeleton with 3 source templates:
-  - Kaggle API integration
-  - DevPost JSON scraping
-  - Unstop placeholder (ready for implementation)
-- [x] Data transformation pipeline
-- [x] Aggregation logic
-
-### JavaScript Modules ✅
-- [x] `api.js` - API communication abstraction
-- [x] `main.js` - Application logic & UI rendering
-- [x] `filters.js` - Advanced filtering utilities
-- [x] All modular and reusable
-
-### Configuration & Docs ✅
-- [x] `package.json` with all dependencies
-- [x] `.env.example` template
-- [x] `.gitignore` for security
-- [x] `README.md` - Complete documentation
-- [x] `SETUP.md` - Getting started guide
-- [x] `ARCHITECTURE.md` - Design decisions explained
-
----
-
-## Next Steps (What You Should Do) 🚀
-
-### Immediate (Today)
-- [ ] Run `npm install` to install dependencies
-- [ ] Run `npm run dev` to start the backend
-- [ ] Open http://localhost:5000 in browser
-- [ ] Test the "🔄 Update" button
-- [ ] Check that cards load from sample data
-
-### Short Term (This Week)
-- [ ] Test locally with sample data
-- [ ] Read through `ARCHITECTURE.md` to understand the flow
-- [ ] Set up your API keys:
-  - [ ] Kaggle API key (from Kaggle account settings)
-  - [ ] Optional: Devpost API details
-- [ ] Update `.env` file with your keys
-- [ ] Test `npm run fetch` to scrape real data
-
-### Medium Term (Next 2 Weeks)
-- [ ] Initialize Git repo: `git init`
-- [ ] Push to GitHub
-- [ ] Deploy backend (Railway.app recommended)
-- [ ] Deploy frontend (Vercel recommended)
-- [ ] Get your live URL
-
-### Long Term (Next Month+)
-- [ ] Add more data sources (AIcrowd, Zindi, etc.)
-- [ ] Implement timeline/calendar view
-- [ ] Set up GitHub Actions for daily scraping
-- [ ] Add user preferences (bookmarks, notifications)
-- [ ] Upgrade to MongoDB for more data
-- [ ] Add export features (CSV, ICS for calendar)
-
----
-
-## How to Use Right Now
-
-### 1. Start Development Server
-```bash
-cd ~/Downloads/Hackathon-tracker
-npm install
-npm run dev
-```
-
-### 2. Visit the App
-Open: http://localhost:5000
-
-### 3. Test Features
-- ✅ Click filter buttons
-- ✅ Type in search box
-- ✅ Click "🔄 Update" button
-- ✅ Cards should appear/disappear
-- ✅ Check browser console (F12) for logs
-
-### 4. View Backend Logs
-Watch the terminal running `npm run dev` to see:
-- API requests
-- Data loading
-- Any errors
-
----
-
-## Troubleshooting Commands
-
-```bash
-# See if port 5000 is already in use
-lsof -i :5000
-
-# Kill process on port 5000
-lsof -ti:5000 | xargs kill -9
-
-# Check if npm is installed
-npm --version
-
-# Reinstall dependencies
-rm -rf node_modules
-npm install
-
-# Run data scraper directly
-npm run fetch
-
-# Check what files were created
-ls -la ~/Downloads/Hackathon-tracker/
-find ~/Downloads/Hackathon-tracker -type f -name "*.js" -o -name "*.json"
-```
-
----
-
-## File-by-File Summary
-
-| File | Purpose | Status |
-|------|---------|--------|
-| `public/index.html` | Main UI | ✅ Ready |
-| `public/js/api.js` | Backend communication | ✅ Ready |
-| `public/js/main.js` | App logic | ✅ Ready |
-| `backend/server.js` | Express setup | ✅ Ready |
-| `backend/scraper.js` | Data fetching | ✅ Skeleton done |
-| `backend/routes/hackathons.js` | API endpoints | ✅ Ready |
-| `data/hackathons.json` | Data storage | ✅ Sample data |
-| `package.json` | Dependencies | ✅ Ready |
-| `.env.example` | Config template | ✅ Ready |
-
----
-
-## Key Features Explained
-
-### 🎯 "Update" Button
-- Sends POST request to `/api/hackathons/refresh`
-- Triggers scraper.js to fetch from multiple sources
-- Updates data/hackathons.json
-- Frontend reloads automatically
-- Shows "Updating..." state during process
-
-### 🔍 Filter System
-- Click filter buttons to narrow results
-- Each filter sends query to backend
-- Backend filters in-memory before returning
-- Results update dynamically
-
-### 🔗 API Endpoints
-All respond with JSON:
-```json
-{
-  "success": true,
-  "data": [...],
-  "total": 42,
-  "lastUpdated": "2026-05-14T12:00:00Z"
-}
-```
-
-### 📱 Responsive Design
-- Mobile-first CSS
-- Breakpoint at 600px
-- Cards stack on mobile
-- Touch-friendly buttons
-
----
-
-## API Testing (Advanced)
-
-### Test hackathons list
-```bash
-curl http://localhost:5000/api/hackathons | jq .
-```
-
-### Test filtering
-```bash
-curl "http://localhost:5000/api/hackathons?filter=open" | jq .
-```
-
-### Test search
-```bash
-curl "http://localhost:5000/api/hackathons?search=kaggle" | jq .
-```
-
-### Test refresh
-```bash
-curl -X POST http://localhost:5000/api/hackathons/refresh | jq .
-```
-
-### Test health
-```bash
-curl http://localhost:5000/api/health | jq .
-```
-
----
-
-## Data Format Reference
-
-Each hackathon object looks like:
-```json
-{
-  "id": "hack_kaggle_123",
-  "name": "Kaggle ML Competition",
-  "platform": "Kaggle",
-  "category": "recurring",
-  "description": "Weekly & monthly competitions",
-  "prizeRange": "$1K – $100K",
-  "participants": "Variable",
-  "deadline": "2026-06-30T23:59:59Z",
-  "url": "https://kaggle.com/competitions",
-  "tags": ["ml", "data-science", "ai"],
-  "remote": true,
-  "aiAllowed": true,
-  "fetchedAt": "2026-05-14T12:00:00Z"
-}
-```
-
-When adding new data, follow this format!
-
----
-
-## GitHub Setup (When Ready)
-
-```bash
-# Initialize git
-git init
-
-# Add everything
-git add .
-
-# Commit
-git commit -m "Initial HackTrack setup - Vanilla JS + Node.js backend"
-
-# Create repo on GitHub (via web interface)
-
-# Push
-git remote add origin https://github.com/YOUR_USERNAME/hackathon-tracker.git
-git branch -M main
-git push -u origin main
-```
-
----
-
-## Deployment Checklist
-
-### Before Deploying
-- [ ] Test locally: `npm run dev`
-- [ ] No console errors in browser (F12)
-- [ ] No errors in terminal
-- [ ] Data loads: visit http://localhost:5000/api/hackathons
-- [ ] Update button works
-- [ ] All tests pass
-
-### Deploy Backend (Railway.app)
-1. Push to GitHub
-2. Connect GitHub repo on Railway.app
-3. Set environment variables in Railway
-4. Deploy (auto-deploys on push)
-
-### Deploy Frontend (Vercel)
-1. Connect GitHub repo on Vercel
-2. Build command: (skip, it's static)
-3. Public directory: `public`
-4. Environment: `REACT_APP_API_URL` = your Railway backend URL
-5. Deploy
-
----
-
-## Success Criteria
-
-You'll know everything is working when:
-
-✅ `npm run dev` starts without errors
-✅ Browser opens to http://localhost:5000
-✅ Cards display with sample data
-✅ Filter buttons work
-✅ Search works
-✅ Update button shows "Updating..." then updates data
-✅ No red errors in browser console (F12)
-✅ API responds to: `curl http://localhost:5000/api/hackathons`
-✅ GitHub push works: `git push origin main`
-✅ Backend deployed to Railway
-✅ Frontend deployed to Vercel
-✅ Live link works: https://your-domain.vercel.app
-
----
-
-## Questions?
-
-1. **"The app won't start"** → Check `SETUP.md`
-2. **"How does the API work?"** → Read `ARCHITECTURE.md`
-3. **"How do I add more data sources?"** → See `backend/scraper.js`
-4. **"How do I deploy?"** → Search for Railway/Vercel in `README.md`
-5. **"What now?"** → Read `SETUP.md` Getting Started section
-
----
-
-## You're Ready! 🎉
-
-Everything is set up and waiting for you to:
-1. Install dependencies
-2. Start the server
-3. Test locally
-4. Deploy to the world
-
-```bash
-npm install && npm run dev
-```
-
-**Go build something awesome!** 🚀
-</file>
-
 <file path="package.json">
 {
-  "name": "hackathon-tracker",
-  "version": "1.0.0",
-  "description": "Live hackathon tracker with real-time updates from multiple platforms",
+  "name": "hacktrack",
+  "version": "2.0.0",
+  "private": true,
+  "description": "HackTrack — Global Competition Intelligence Platform. 95+ seeded competitions, AI-powered web discovery, dark hacker aesthetic.",
+  "type": "commonjs",
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js",
-    "fetch": "node backend/scraper.js"
+    "dev:backend": "PORT=5001 nodemon backend/server.js",
+    "dev:frontend": "vite",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "discover": "node -e \"require('./backend/discovery/search_crawler').discoverNewHackathons()\"",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
-  "keywords": [
-    "hackathon",
-    "competition",
-    "tracker",
-    "live",
-    "remote"
-  ],
-  "author": "Your Name",
+  "keywords": ["hackathon", "competition", "tracker", "intelligence", "scraper"],
+  "author": "S.J.",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "axios": "^1.4.0",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "@google/generative-ai": "^0.24.0",
+    "node-cron": "^3.0.3",
+    "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-router": "^1.168.25",
+    "@tanstack/react-start": "^1.167.50",
+    "@tanstack/router-plugin": "^1.167.28",
+    "@cloudflare/vite-plugin": "^1.25.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.575.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.1",
+    "vite-tsconfig-paths": "^6.0.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "concurrently": "^8.0.1",
+    "@eslint/js": "^9.32.0",
+    "@types/node": "^22.16.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^15.15.0",
+    "prettier": "^3.7.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.56.1",
+    "vite": "^7.3.1"
   }
 }
 </file>
 
-<file path="PROJECT_SUMMARY.txt">
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║                    🎊 HACKTRACK PROJECT COMPLETE 🎊                          ║
-║                                                                              ║
-║                  Live Hackathon Tracker - Full Stack Ready                  ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
-WHAT YOU ASKED FOR:
-  ✓ "I want to make a live hackathon tracker"
-  ✓ "Pure and responsive"
-  ✓ "Native JS or something else?"
-  ✓ "Can it fetch from different websites?"
-  ✓ "Live updates with timeline?"
-  ✓ "Auto-add remote hackathons?"
-  ✓ "Full folder structure?"
-
-WHAT YOU GOT:
-  ✓ Complete full-stack project
-  ✓ Vanilla JavaScript (pure, responsive)
-  ✓ Node.js + Express backend
-  ✓ Multi-source data fetching
-  ✓ Live update button that triggers scraper
-  ✓ Auto-loading of new hackathons
-  ✓ Professional folder organization
-  ✓ 5 comprehensive guide documents
-  ✓ Production-ready code
-  ✓ Deployment instructions included
-
-════════════════════════════════════════════════════════════════════════════════
-
-📁 PROJECT STRUCTURE (16 FILES):
-
-  Frontend (Vanilla JS - 3 files):
-    ✓ public/index.html             Main responsive UI
-    ✓ public/js/api.js              API communication module
-    ✓ public/js/main.js             Core app logic (200+ lines)
-    ✓ public/js/filters.js          Filtering utilities
-
-  Backend (Node.js - 3 files):
-    ✓ backend/server.js             Express setup
-    ✓ backend/scraper.js            Multi-source data fetcher
-    ✓ backend/routes/hackathons.js  REST API endpoints
-
-  Data (1 file):
-    ✓ data/hackathons.json          Sample data (ready for real data)
-
-  Configuration (4 files):
-    ✓ package.json                  Dependencies & scripts
-    ✓ .env.example                  Environment template
-    ✓ .gitignore                    Git ignore file
-    ✓ README.md                     Full technical documentation
-
-  Documentation (5 files):
-    ✓ START_HERE.md                 **READ THIS FIRST**
-    ✓ SETUP.md                      Getting started guide
-    ✓ ARCHITECTURE.md               Design decisions explained
-    ✓ CHECKLIST.md                  Your action items
-    ✓ PROJECT_SUMMARY.txt           This file
-
-════════════════════════════════════════════════════════════════════════════════
-
-🚀 GET STARTED IN 5 MINUTES:
-
-  1. Install dependencies:
-     $ npm install
-
-  2. Start backend server:
-     $ npm run dev
-
-  3. Open browser:
-     http://localhost:5000
-
-  4. Test features:
-     - Click filters
-     - Type in search
-     - Click "🔄 Update" button
-
-  Done! You have a working hackathon tracker.
-
-════════════════════════════════════════════════════════════════════════════════
-
-📖 DOCUMENTATION (Read in This Order):
-
-  1. START_HERE.md      ← **Start here** (this answers everything)
-  2. SETUP.md           ← Installation & quick start
-  3. ARCHITECTURE.md    ← Understand the design
-  4. CHECKLIST.md       ← Your next steps
-  5. README.md          ← Full technical reference
-
-════════════════════════════════════════════════════════════════════════════════
-
-✨ KEY FEATURES:
-
-  Frontend:
-    ✓ Vanilla JavaScript (pure, no frameworks)
-    ✓ Responsive design (mobile-first)
-    ✓ Dark theme (professional look)
-    ✓ Dynamic card rendering
-    ✓ Filter & search functionality
-    ✓ "🔄 Update" button for live refresh
-
-  Backend:
-    ✓ Express.js REST API
-    ✓ Multi-source scraping (Kaggle, Devpost, Unstop)
-    ✓ Data aggregation pipeline
-    ✓ 5 API endpoints
-    ✓ Error handling & logging
-    ✓ Ready for MongoDB upgrade
-
-  Data Management:
-    ✓ JSON file storage (current)
-    ✓ Easy MongoDB integration (future)
-    ✓ Automatic data transformation
-    ✓ Timestamp tracking
-    ✓ Source attribution
-
-════════════════════════════════════════════════════════════════════════════════
-
-🔧 HOW IT WORKS:
-
-  Live Update Flow:
-    User clicks "🔄 Update"
-           ↓
-    Frontend sends: POST /api/hackathons/refresh
-           ↓
-    Backend scraper fetches from:
-      - Kaggle API
-      - Devpost endpoint
-      - Unstop (ready for setup)
-           ↓
-    Data gets parsed and aggregated
-           ↓
-    Saves to data/hackathons.json
-           ↓
-    Frontend reloads automatically
-           ↓
-    New/updated hackathons appear
-
-  Remote Hackathons:
-    - Auto-detected by scraper (location = 'Virtual')
-    - Auto-added to data/hackathons.json
-    - Frontend displays with "Remote" badge
-    - Filterable by category
-
-  Timeline/Calendar:
-    - All hackathons have deadline metadata
-    - Ready for calendar visualization
-    - Example: "deadline": "2026-06-30T23:59:59Z"
-
-════════════════════════════════════════════════════════════════════════════════
-
-💡 YOUR QUESTIONS ANSWERED:
-
-  Q: "Is it possible to make a live hackathon tracker?"
-  A: ✓ YES - Architecture supports multi-source fetching
-
-  Q: "Should I use native JS or framework?"
-  A: ✓ Vanilla JS (perfect choice - we used it)
-
-  Q: "Can it fetch from different websites?"
-  A: ✓ YES - Backend scraper with 3 sources ready
-
-  Q: "Can it show a timeline?"
-  A: ✓ YES - All deadline metadata in place
-
-  Q: "Should it auto-add new remote hackathons?"
-  A: ✓ YES - Scraper auto-adds to JSON
-
-  Q: "Should it be responsive?"
-  A: ✓ YES - Mobile-first CSS Grid design
-
-════════════════════════════════════════════════════════════════════════════════
-
-📊 TECHNOLOGY STACK:
-
-  Frontend:
-    - Vanilla JavaScript (ES6+)
-    - HTML5 semantic markup
-    - CSS3 (Grid, Flexbox, CSS Variables)
-    - Fetch API for backend communication
-
-  Backend:
-    - Node.js 16+
-    - Express.js (REST API framework)
-    - Axios (HTTP client)
-    - Cheerio (web scraping)
-    - File system (JSON storage)
-
-  Tools:
-    - npm (package manager)
-    - Git (version control)
-    - Optional: GitHub, Railway.app, Vercel
-
-  Deployment:
-    - Frontend: Vercel (free)
-    - Backend: Railway.app (free)
-    - Database: JSON → MongoDB (upgrade path)
-
-════════════════════════════════════════════════════════════════════════════════
-
-🎯 YOUR NEXT STEPS:
-
-  TODAY:
-    1. $ npm install
-    2. $ npm run dev
-    3. Open http://localhost:5000
-    4. Read START_HERE.md
-
-  THIS WEEK:
-    1. Read ARCHITECTURE.md
-    2. Get Kaggle API key
-    3. Test $ npm run fetch
-    4. Deploy to GitHub
-
-  NEXT 2 WEEKS:
-    1. Deploy backend to Railway.app
-    2. Deploy frontend to Vercel
-    3. Go live with your URL
-
-  LONG TERM:
-    1. Add more data sources
-    2. Implement calendar view
-    3. Set up GitHub Actions for daily scraping
-    4. Upgrade to MongoDB
-
-════════════════════════════════════════════════════════════════════════════════
-
-💪 YOU'RE READY TO:
-
-  ✓ Run locally: npm run dev
-  ✓ Test the UI: http://localhost:5000
-  ✓ Deploy backend: Railway.app
-  ✓ Deploy frontend: Vercel
-  ✓ Go live: Share your URL with the world
-  ✓ Add more sources: Easy extension points ready
-  ✓ Scale up: MongoDB upgrade path included
-
-════════════════════════════════════════════════════════════════════════════════
-
-❓ QUICK HELP:
-
-  "How do I start?"          → Read: START_HERE.md
-  "How do I run it?"         → Read: SETUP.md
-  "How does it work?"        → Read: ARCHITECTURE.md
-  "What should I do next?"   → Read: CHECKLIST.md
-  "I have questions"         → Read: README.md
-  "I get an error"           → Read: SETUP.md → Troubleshooting
-
-════════════════════════════════════════════════════════════════════════════════
-
-🎉 PROJECT READY!
-
-Your hackathon tracker is production-ready. Everything is set up and documented.
-
-Just run:
-  $ npm install && npm run dev
-
-Then open:
-  http://localhost:5000
-
-Welcome to your live hackathon tracker! 🚀
-
-════════════════════════════════════════════════════════════════════════════════
-
-Built with ❤️ using Vanilla JS + Node.js
-Ready to deploy and scale
-</file>
-
 <file path="README.md">
-# 🚀 HackTrack — Live Hackathon Tracker
+# HackTrack — Global Competition Intelligence
 
-A responsive, real-time hackathon tracker that aggregates competitions from multiple platforms. Built with vanilla JavaScript frontend and Node.js backend.
+A live, AI-powered platform tracking **95+ hackathons, competitions, bounties, and coding contests** across the internet. Built with a dark hacker aesthetic.
 
-## 📁 Project Structure
+## Quick Start
 
-```
-hackathon-tracker/
-├── public/               # Frontend (static files)
-│   ├── index.html       # Main UI
-│   ├── css/
-│   │   └── styles.css   # Separated styles
-│   └── js/
-│       ├── main.js      # Core logic
-│       ├── api.js       # API communication
-│       └── filters.js   # Filter/search logic
-├── backend/              # Node.js backend
-│   ├── server.js        # Express server
-│   ├── scraper.js       # Data fetchers
-│   ├── routes/
-│   │   └── hackathons.js # API endpoints
-│   └── utils/
-│       └── parser.js    # Parse hackathon data
-├── data/                 # Data storage
-│   ├── hackathons.json  # Aggregated data
-│   └── cache.json       # Caching layer
-├── package.json         # Dependencies
-└── README.md           # This file
-```
-
-## 🛠 Tech Stack
-
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3 (responsive)
-- **Backend**: Node.js + Express
-- **Data Fetching**: Axios + Cheerio (web scraping)
-- **Storage**: JSON files (can migrate to MongoDB)
-- **Deployment**: Vercel (frontend) + Railway/Render (backend)
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 16+
-- npm or yarn
-
-### Installation
-
-1. Install dependencies:
 ```bash
 npm install
-```
-
-2. Create `.env` file:
-```
-PORT=5000
-NODE_ENV=development
-```
-
-3. Start the backend server:
-```bash
 npm run dev
 ```
 
-4. Open `public/index.html` in your browser
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5001
 
-### Fetching Data
+## Features
 
-```bash
-npm run fetch
-```
+- 🎯 **95 seeded competitions** across 15 categories (2026-specific, daily, weekly, monthly, annual, always-open)
+- 🔍 **AI Web Discovery Engine** — automatically finds new hackathons using DuckDuckGo + Google Gemini
+- 🎨 **Dark hacker aesthetic** — IBM Plex Mono, Syne fonts, green-on-dark theme
+- 📊 **Multi-dimensional filtering** — by platform, skill domain, difficulty, effort level, AI policy, mode
+- 💎 **Hidden Gems** — rarity scoring system to surface low-competition, high-reward opportunities
+- ⏰ **Live countdowns** — tracks nearest deadlines
+- 🤖 **Platform scrapers** — Devpost and Kaggle adapters with retry and rate limiting
 
-This will scrape and aggregate hackathon data from configured sources.
+## Project Docs
 
-## 📊 API Endpoints
+See `already-done-job/` for:
+- `HANDOFF.md` — Complete architecture, schema, file map, and roadmap
+- `CHANGELOG.md` — Detailed history of all work done
+- `PROMPT_FOR_NEW_AI.md` — Quick-start prompt to hand off to another AI
 
-- `GET /api/hackathons` — Get all hackathons
-- `POST /api/hackathons/refresh` — Trigger data update
-- `GET /api/hackathons?filter=open` — Filter by status
-- `GET /api/hackathons/search?q=kaggle` — Search hackathons
+## Tech Stack
 
-## 🔄 How Live Updates Work
+| Layer | Tech |
+|-------|------|
+| Frontend | React 19, TanStack Router, Tailwind CSS v4, Vite 7, TypeScript |
+| Backend | Node.js, Express, Axios, Cheerio |
+| AI Discovery | Google Gemini 1.5 Flash (free), DuckDuckGo |
+| Scheduling | node-cron |
 
-1. **Frontend**: User clicks "Update" button
-2. **Backend**: Receives request, triggers scraper
-3. **Scraper**: Fetches from Kaggle API, Devpost RSS, Unstop, etc.
-4. **Database**: Updates `hackathons.json` with new data
-5. **Frontend**: Polls or receives WebSocket update, refreshes UI
+## License
 
-## 🌐 Data Sources (Planned)
-
-- ✅ Kaggle API
-- ✅ Devpost (RSS/Scraping)
-- ✅ Unstop
-- ✅ Zindi
-- ✅ AIcrowd
-- ✅ Devfolio
-- ✅ HackerEarth API
-- ⏳ Custom hackathon feeds
-
-## 📝 Features
-
-- [x] Responsive design (mobile-first)
-- [x] Real-time filtering & search
-- [x] Hackathon categorization (Open, Upcoming, Recurring, etc.)
-- [ ] Live update via button click
-- [ ] Automated daily scraping (GitHub Actions)
-- [ ] Timeline/calendar view
-- [ ] Export as CSV/ICS
-- [ ] Dark theme (already included)
-
-## 🔐 Environment Variables
-
-```
-PORT=5000
-NODE_ENV=development
-KAGGLE_API_KEY=your_key_here
-DEVPOST_API=https://devpost.com/hackathons.json
-```
-
-## 📦 Deployment
-
-### Frontend (Vercel)
-```bash
-vercel deploy
-```
-
-### Backend (Railway/Render)
-- Push to GitHub
-- Connect repository
-- Auto-deploy on push
-
-### GitHub Actions (Scheduled Scraping)
-Set up workflow to run `npm run fetch` daily at midnight
-
-## 💡 Contributing
-
-1. Fork the repo
-2. Create a feature branch
-3. Commit changes
-4. Push to branch
-5. Open a Pull Request
-
-## 📄 License
-
-MIT License — feel free to use this for personal or commercial projects.
-
-## 👤 Author
-
-Built for IISc RBCCPS M.Tech AI/ML students.
-
----
-
-**Next Steps**: Set up backend scrapers, create API endpoints, and deploy!
-</file>
-
-<file path="SETUP.md">
-# 🚀 HackTrack Setup & Getting Started Guide
-
-## Your Project is Ready!
-
-I've converted your single HTML file into a **complete, scalable, full-stack hackathon tracker** with the following structure:
-
-```
-hackathon-tracker/
-├── public/                           # Frontend (Static Files + UI)
-│   ├── index.html                   # Main responsive UI
-│   └── js/
-│       ├── api.js                   # API communication module
-│       ├── main.js                  # Core app logic
-│       └── filters.js               # Filter utilities
-├── backend/                          # Node.js Express Server
-│   ├── server.js                    # Express app setup
-│   ├── scraper.js                   # Web scraping logic (Kaggle, Devpost, etc.)
-│   └── routes/
-│       └── hackathons.js            # REST API endpoints
-├── data/                             # Data Storage
-│   └── hackathons.json              # Aggregated hackathon data
-├── package.json                      # Node.js dependencies
-├── .env.example                      # Environment variables template
-├── .gitignore                        # Git ignore file
-└── README.md                         # Full documentation
-```
-
----
-
-## ✅ Features Implemented
-
-- **✅ Vanilla JavaScript** (no frameworks) - responsive, pure JS
-- **✅ REST API backend** with Express.js
-- **✅ Dynamic card loading** - fetches from backend, not hardcoded HTML
-- **✅ Live update button** - click to refresh hackathon data
-- **✅ Filter & search** - category, text search, upcoming/open filters
-- **✅ Responsive design** - mobile-first, dark theme
-- **✅ Data aggregation** - prepares for multi-source scraping
-- **✅ JSON data storage** - easily extendable to MongoDB
-
----
-
-## 🛠 Quick Start (5 Minutes)
-
-### 1. Install Dependencies
-```bash
-cd /Users/sashishjha/Downloads/Hackathon-tracker
-npm install
-```
-
-### 2. Start Backend Server
-```bash
-npm run dev
-```
-You should see:
-```
-🚀 HackTrack server running on http://localhost:5000
-📊 API available at http://localhost:5000/api/hackathons
-```
-
-### 3. Open Frontend
-Open [http://localhost:5000](http://localhost:5000) in your browser
-
-### 4. Test the Update Button
-Click the **🔄 Update** button in the top right. The backend will refresh data and respond.
-
----
-
-## 📊 How It Works
-
-### Architecture Diagram:
-```
-┌─────────────────────────────────────────────────────┐
-│            Frontend (Vanilla JS)                    │
-│  - public/index.html (responsive UI)                │
-│  - public/js/*.js (app logic)                       │
-└──────────────────┬──────────────────────────────────┘
-                   │ API Calls (fetch)
-                   │ GET /api/hackathons
-                   │ POST /api/hackathons/refresh
-                   │
-┌──────────────────▼──────────────────────────────────┐
-│       Backend (Node.js + Express)                   │
-│  - backend/server.js (API setup)                    │
-│  - backend/routes/hackathons.js (endpoints)        │
-└──────────────────┬──────────────────────────────────┘
-                   │ Scrapes / Fetches
-                   │
-┌──────────────────▼──────────────────────────────────┐
-│     Data Sources (External APIs)                    │
-│  - Kaggle API                                       │
-│  - Devpost (JSON endpoint)                          │
-│  - Unstop (scraping needed)                         │
-│  - Future: AIcrowd, Zindi, etc.                     │
-└──────────────────┬──────────────────────────────────┘
-                   │ Aggregates
-                   │
-┌──────────────────▼──────────────────────────────────┐
-│     Local Data Storage                              │
-│  - data/hackathons.json                             │
-│  (Can upgrade to MongoDB later)                     │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 🔌 API Endpoints (Live)
-
-### Get all hackathons
-```bash
-curl http://localhost:5000/api/hackathons
-```
-
-### Filter by category
-```bash
-curl http://localhost:5000/api/hackathons?filter=open
-```
-
-### Search
-```bash
-curl http://localhost:5000/api/hackathons?search=kaggle
-```
-
-### Refresh data
-```bash
-curl -X POST http://localhost:5000/api/hackathons/refresh
-```
-
----
-
-## 📋 Current Status
-
-✅ **Completed:**
-- Basic REST API with CRUD operations
-- Frontend UI with dynamic card rendering
-- Filter and search functionality
-- Update button triggers API refresh
-- Sample data in `data/hackathons.json`
-- Environment setup (.env.example)
-
-🔄 **Next Steps (You Can Do These):**
-
-1. **Set up Kaggle API** (Optional but powerful)
-   - Get API key from Kaggle account settings
-   - Add to `.env`: `KAGGLE_API_KEY=your_key`
-   - Uncomment Kaggle fetching in `backend/scraper.js`
-
-2. **Add Devpost RSS scraping**
-   - Already coded in `scraper.js`
-   - Test by running: `npm run fetch`
-
-3. **Expand data sources**
-   - Unstop (needs custom scraper)
-   - AIcrowd competitions API
-   - Zindi competitions
-
-4. **Deploy to GitHub**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial HackTrack setup"
-   git remote add origin https://github.com/YOUR_USERNAME/hackathon-tracker.git
-   git push -u origin main
-   ```
-
-5. **Deploy Backend** (Free options)
-   - **Railway.app** - Best free option for Node.js
-   - **Render.com** - Also good
-   - **Replit** - Quick and easy
-
-6. **Deploy Frontend** (Free options)
-   - **Vercel** - Seamless with GitHub
-   - **GitHub Pages** - Simple static hosting
-   - **Netlify** - Good for SPAs
-
----
-
-## 🧪 Testing Locally
-
-### Test Backend API:
-```bash
-# In another terminal while server is running
-npm run fetch
-# This will scrape data and update data/hackathons.json
-
-# Then check if data was loaded:
-curl http://localhost:5000/api/hackathons | jq '.data[0]'
-```
-
-### Test Frontend:
-1. Open http://localhost:5000 in browser
-2. Check browser console (F12 → Console) for any errors
-3. Click "🔄 Update" button - should show "Updating..."
-4. Cards should load from data/hackathons.json
-
----
-
-## 🔐 Security Notes
-
-- `.env` file contains API keys - **add to .gitignore** (already done)
-- Don't commit `.env` file - use `.env.example` as template
-- For production, use proper environment variable management
-
----
-
-## 📱 Mobile Testing
-
-The UI is fully responsive. Test on mobile:
-- **Chrome DevTools**: F12 → Toggle device toolbar (Ctrl+Shift+M)
-- Breakpoint at 600px handles mobile layout
-
----
-
-## 🆘 Troubleshooting
-
-**"Cannot find module 'express'"**
-- Run `npm install`
-
-**"Address already in use :5000"**
-- Another app is using port 5000
-- Kill the process: `lsof -ti:5000 | xargs kill -9`
-- Or change PORT in `.env`
-
-**"No hackathons showing"**
-- Check browser console for errors (F12)
-- Check server logs for API errors
-- Ensure `data/hackathons.json` exists
-
-**"Update button does nothing"**
-- Open browser DevTools → Network tab
-- Click update, see if POST request succeeds
-- Check server logs for errors
-
----
-
-## 🎯 Your Next Big Task: Live Web Scraping
-
-**Challenge**: Currently we have sample data. To make it truly "live", you need to:
-
-1. **Implement Kaggle scraper** (easiest - has public API)
-   - File: `backend/scraper.js` - functions already stubbed
-   - Uses `axios` library (already installed)
-
-2. **Implement Devpost scraper** (medium - JSON endpoint)
-   - Devpost has a public `/hackathons.json` endpoint
-   - Parse and transform data
-
-3. **Implement Unstop scraper** (harder - needs DOM scraping)
-   - Use `cheerio` library (already installed)
-   - Scrape HTML and extract competition details
-
-4. **Set up cron job** (GitHub Actions)
-   - Auto-scrape daily at midnight
-   - Update data automatically
-
----
-
-## 💡 Pro Tips
-
-- **Test with sample data first** - don't hit APIs immediately
-- **Use rate limiting** - most APIs have request limits
-- **Cache aggressively** - don't re-scrape on every button click
-- **Log everything** - console.log helps debugging
-- **Deploy early** - cloud hosting free tier is fine for MVP
-
----
-
-## 📚 Useful Resources
-
-- [Express.js Tutorial](https://expressjs.com/)
-- [Fetch API (vanilla JS)](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
-- [Kaggle API Docs](https://github.com/Kaggle/kaggle-api)
-- [Devpost API](https://www.devpost.com/api/gallery)
-- [Railway.app Deploy Guide](https://docs.railway.app/)
-
----
-
-## 🎉 You're All Set!
-
-Your hackathon tracker is ready to go. The architecture is clean, scalable, and ready for expansion.
-
-### Next command:
-```bash
-npm install && npm run dev
-```
-
-Then open http://localhost:5000 and start building! 🚀
-
----
-
-**Questions? Check:**
-- `README.md` for full documentation
-- Browser console (F12 → Console) for errors
-- Server logs for backend issues
-- `.env.example` for configuration template
-</file>
-
-<file path="START_HERE.md">
-# 🎊 HackTrack: Complete Project Delivery Summary
-
-## What You Asked For
-> "I want to make a live hackathon tracker that's pure and responsive. Should I use native JS or something else? Can it fetch from different websites and show live updates with a timeline? Should it auto-add new remote hackathons?"
-
-## What You Got ✨
-
-A **complete, production-ready hackathon tracker** with:
-- ✅ **Vanilla JavaScript** (pure, no frameworks)
-- ✅ **Fully responsive** (mobile-first design)
-- ✅ **Live update button** that fetches from multiple websites
-- ✅ **REST API backend** (Node.js + Express)
-- ✅ **Dynamic data loading** (auto-adds new hackathons)
-- ✅ **Timeline-ready** (all metadata in place)
-- ✅ **Production-deployable** (ready for GitHub + cloud hosting)
-- ✅ **Well-documented** (4 guide documents included)
-
----
-
-## 📁 Complete Project Structure
-
-```
-hackathon-tracker/
-│
-├── 📄 Documentation Files
-│   ├── README.md              ← Full technical documentation
-│   ├── SETUP.md               ← Getting started guide (READ THIS FIRST)
-│   ├── ARCHITECTURE.md        ← Design decisions & how it works
-│   ├── CHECKLIST.md           ← This checklist (what to do next)
-│   ├── package.json           ← Node.js dependencies
-│   └── .env.example           ← Environment template
-│
-├── 🎨 Frontend (Vanilla JS)
-│   └── public/
-│       ├── index.html         ← Main UI (responsive, dark theme)
-│       └── js/
-│           ├── api.js         ← API communication module
-│           ├── main.js        ← Core app logic (200+ lines)
-│           └── filters.js     ← Advanced filtering utilities
-│
-├── 🔧 Backend (Node.js)
-│   └── backend/
-│       ├── server.js          ← Express.js setup
-│       ├── scraper.js         ← Multi-source data fetcher
-│       └── routes/
-│           └── hackathons.js  ← REST API endpoints
-│
-├── 💾 Data Storage
-│   └── data/
-│       └── hackathons.json    ← Sample data (3 platforms)
-│
-└── 🛠️ Configuration
-    ├── .gitignore            ← Don't commit .env
-    └── .env.example          ← API key template
-```
-
----
-
-## 🚀 Quick Start (5 Minutes)
-
-### 1️⃣ Install & Start
-```bash
-cd ~/Downloads/Hackathon-tracker
-npm install                    # Install dependencies (1 minute)
-npm run dev                    # Start backend server
-```
-
-### 2️⃣ Open Browser
-Visit: **http://localhost:5000**
-
-### 3️⃣ Test Features
-- ✅ See hackathons loading from `data/hackathons.json`
-- ✅ Click filter buttons (Open, Upcoming, Recurring, etc.)
-- ✅ Type in search box
-- ✅ Click **🔄 Update** button (triggers backend)
-- ✅ Check browser console (F12) for logs
-
-### 4️⃣ That's it!
-You have a working hackathon tracker running locally. 🎉
-
----
-
-## 💡 Key Features Explained
-
-### 1. **Live Update Button** 🔄
-```
-User clicks "🔄 Update"
-    ↓
-Frontend sends: POST /api/hackathons/refresh
-    ↓
-Backend scraper fetches from:
-    - Kaggle API
-    - Devpost
-    - Unstop (ready for setup)
-    ↓
-Data aggregates & saves to JSON
-    ↓
-Frontend reloads automatically
-    ↓
-New/updated hackathons appear
-```
-
-### 2. **Vanilla JavaScript** (No Frameworks)
-- Pure ES6+ JavaScript
-- HTML5 + CSS Grid/Flexbox
-- Fetch API for backend communication
-- Direct DOM manipulation
-
-**Why?** Lightweight, fast, educational, no build step needed.
-
-### 3. **Responsive Design** 📱
-- Mobile-first CSS
-- Breakpoint at 600px
-- Cards stack on small screens
-- Touch-friendly buttons
-- Dark theme (professional look)
-
-### 4. **Multi-Source Integration** 🌐
-Currently set up for:
-- **Kaggle** (ML competitions)
-- **DevPost** (Hackathons)
-- **Unstop** (India-focused, ready for scraping)
-
-Easy to add more sources (AIcrowd, Zindi, etc.)
-
-### 5. **Dynamic Card Generation** 🎴
-Cards display:
-- Name & platform
-- Description
-- Prize amount
-- Deadline & dates
-- Participant count
-- Category badges
-- Tags (AI, remote, India, etc.)
-- Direct links to register
-
----
-
-## 🔌 API Endpoints Reference
-
-### List all hackathons
-```bash
-GET http://localhost:5000/api/hackathons
-```
-Optional params: `?filter=open&search=kaggle&limit=10&page=1`
-
-### Get single hackathon
-```bash
-GET http://localhost:5000/api/hackathons/hack_kaggle_1
-```
-
-### Add new hackathon
-```bash
-POST http://localhost:5000/api/hackathons
-Body: { "hackathon": { "name": "...", "platform": "..." } }
-```
-
-### Refresh data from sources
-```bash
-POST http://localhost:5000/api/hackathons/refresh
-```
-Triggers scraper, fetches new data, updates JSON.
-
-### Delete hackathon
-```bash
-DELETE http://localhost:5000/api/hackathons/hack_id_123
-```
-
-### Health check
-```bash
-GET http://localhost:5000/api/health
-```
-
----
-
-## 📊 Data Format
-
-Each hackathon stored as:
-```json
-{
-  "id": "hack_kaggle_123",
-  "name": "Kaggle ML Competition",
-  "platform": "Kaggle",
-  "category": "recurring",
-  "description": "Weekly & monthly competitions",
-  "prizeRange": "$1K – $100K",
-  "participants": "1K–10K",
-  "deadline": "2026-06-30T23:59:59Z",
-  "url": "https://kaggle.com/competitions",
-  "tags": ["ml", "data-science", "ai"],
-  "remote": true,
-  "aiAllowed": true,
-  "fetchedAt": "2026-05-14T12:00:00Z"
-}
-```
-
----
-
-## 🎯 Implementation Feasibility (Detailed Answer)
-
-### Q: Can I make a live tracker that fetches from different websites?
-
-**ANSWER: YES** ✅
-
-**Why it works:**
-```
-Browser (JavaScript) ──X── Cannot directly fetch (CORS blocked)
-                            ↓
-                   Backend Server ──✓── Can fetch (no CORS)
-                            ↓
-                   Multiple APIs ──✓── Kaggle, Devpost, etc.
-                            ↓
-                   Store locally ──✓── JSON or Database
-                            ↓
-                   Serve to browser ──✓── Clean data
-```
-
-This is the exact architecture we've built for you.
-
-### Q: Should I use vanilla JS or a framework?
-
-**ANSWER: Vanilla JS** ✅ (You chose well!)
-
-**Why:**
-- Pure JavaScript means you understand every line
-- Fewer dependencies = easier deployment
-- Perfect for this scope
-- Can add React/Vue later if needed
-
-**Our implementation:**
-- 200+ lines of clean, readable JS
-- No build step required
-- Modular architecture (api.js, main.js, filters.js)
-
-### Q: Can it show timelines and auto-add hackathons?
-
-**ANSWER: YES** ✅
-
-**Timeline:** Ready to implement
-- All hackathons have deadline metadata
-- Can add calendar view with fullcalendar.js
-- Currently shows deadlines in cards
-
-**Auto-add:** Already built-in
-- When scraper runs, new hackathons appear in JSON
-- Frontend automatically displays them
-- No manual intervention needed
-
----
-
-## 🛣️ Your Next Steps
-
-### Today
-1. Read this file
-2. Run `npm install`
-3. Run `npm run dev`
-4. Visit http://localhost:5000
-5. Test the interface
-
-### This Week
-1. Read `ARCHITECTURE.md` to understand the design
-2. Add your Kaggle API key to `.env`
-3. Test `npm run fetch` to scrape real data
-4. Read `SETUP.md` for detailed getting started
-
-### Next 2 Weeks
-1. Initialize Git: `git init`
-2. Commit: `git add . && git commit -m "..."`
-3. Push to GitHub
-4. Deploy backend to Railway.app
-5. Deploy frontend to Vercel
-6. Share your live link!
-
-### Long Term
-1. Add more data sources
-2. Implement calendar/timeline view
-3. Set up GitHub Actions for daily scraping
-4. Add user preferences & bookmarks
-5. Upgrade to MongoDB for scale
-
----
-
-## 🎯 You Asked About These - Here's How We Solved Them
-
-| Your Question | Our Solution |
-|---|---|
-| Pure & responsive? | ✅ Vanilla JS + CSS Grid + Mobile-first design |
-| Native JS or framework? | ✅ Vanilla JS (best choice!) |
-| Fetch from websites? | ✅ Backend scraper + REST API |
-| Live updates? | ✅ Update button triggers scraper |
-| Timeline? | ✅ All metadata in place (ready for calendar) |
-| Auto-add remote hackathons? | ✅ Scraper auto-adds to JSON |
-| Full folder structure? | ✅ Professional organization (backend/public/data) |
-
----
-
-## 📚 Documentation Files (In This Project)
-
-| File | Purpose | Read When |
-|------|---------|-----------|
-| `README.md` | Complete technical docs | Understanding the project |
-| `SETUP.md` | Getting started guide | Ready to run locally |
-| `ARCHITECTURE.md` | Design decisions | Want to understand how it works |
-| `CHECKLIST.md` | Next steps | Planning your work |
-
-**Suggested reading order:** SETUP.md → ARCHITECTURE.md → README.md → CHECKLIST.md
-
----
-
-## ✨ What Makes This Special
-
-1. **Production-Ready Code** - Not a demo, but a real app you can deploy
-2. **Modular Design** - Easy to extend and maintain
-3. **Multiple Guides** - Answers almost every question you'll have
-4. **Scalable Architecture** - Ready to grow from JSON to MongoDB
-5. **Free Deployment Options** - Railway.app + Vercel (no cost)
-6. **Open Source** - Push to GitHub, anyone can use it
-7. **Vanilla JS** - Learn how web apps really work
-
----
-
-## 🚀 Example: How to Add a New Hackathon Source
-
-```javascript
-// In backend/scraper.js
-
-async function fetchFromNewPlatform() {
-  const response = await axios.get('https://api.newplatform.com/competitions');
-  return response.data.competitions;
-}
-
-async function scrapeHackathons() {
-  // ... existing code ...
-  
-  // Add this:
-  const newSource = await fetchFromNewPlatform();
-  const transformed = newSource.map(h => transformHackathon(h, 'newplatform'));
-  
-  // Merge and save
-  allHackathons = [...transformed, ...existingHackathons];
-  writeHackathons({...});
-}
-```
-
-That's it! Just add a new fetch function and merge.
-
----
-
-## 🎓 Learning Outcomes
-
-By working with this project, you'll learn:
-- ✅ REST API design (GET, POST, DELETE)
-- ✅ Backend-frontend communication
-- ✅ Web scraping (Axios + Cheerio)
-- ✅ Responsive web design
-- ✅ Vanilla JavaScript patterns
-- ✅ Node.js + Express.js
-- ✅ Git & GitHub workflows
-- ✅ Cloud deployment (Railway, Vercel)
-
----
-
-## 💪 You're Ready!
-
-```bash
-cd ~/Downloads/Hackathon-tracker
-npm install && npm run dev
-```
-
-Open: http://localhost:5000
-
-**Welcome to your hackathon tracker!** 🎉
-
----
-
-## 📞 Quick Reference
-
-| Need Help With | See This |
-|---|---|
-| Getting started | SETUP.md |
-| Understanding code | ARCHITECTURE.md |
-| Troubleshooting | README.md → Troubleshooting |
-| API reference | CHECKLIST.md → API Testing |
-| Deployment | README.md → Deployment |
-| Next steps | CHECKLIST.md |
-
----
-
-**Built with ❤️ using Vanilla JS + Node.js**
-
-**Ready to make it live? Deploy to GitHub + Railway + Vercel in 30 minutes!**
+MIT — Conceived & engineered by S.J.
 </file>
 
 </files>
