@@ -1,8 +1,15 @@
 import type { Competition } from '@/lib/types';
 import { CompetitionCard } from './CompetitionCard';
 
-export function HiddenGems({ competitions }: { competitions: Competition[] }) {
+interface HiddenGemsProps {
+  competitions: Competition[];
+  isBookmarked?: (id: string) => boolean;
+  onToggleBookmark?: (id: string) => void;
+}
+
+export function HiddenGems({ competitions, isBookmarked, onToggleBookmark }: HiddenGemsProps) {
   if (competitions.length === 0) return null;
+
   return (
     <section className="mb-10 animate-in">
       <div className="flex items-center justify-between mb-5">
@@ -15,7 +22,12 @@ export function HiddenGems({ competitions }: { competitions: Competition[] }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
         {competitions.map(c => (
-          <CompetitionCard key={c.id} competition={c} />
+          <CompetitionCard
+            key={c.id}
+            competition={c}
+            isBookmarked={isBookmarked}
+            onToggleBookmark={onToggleBookmark}
+          />
         ))}
       </div>
     </section>

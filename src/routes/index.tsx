@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FilterState } from '@/lib/types';
 import { DEFAULT_FILTER_STATE } from '@/lib/constants';
-import { ALL_COMPETITIONS, getHiddenGems, getUpcomingDeadlines, getStats, filterCompetitions } from '@/data';
+import { getHiddenGems, getUpcomingDeadlines, getStats, filterCompetitions } from '@/data';
+import { useCompetitions } from '@/hooks/useCompetitions';
+import { useBookmarks } from '@/hooks/useBookmarks';
 import { HeroSection } from '@/components/HeroSection';
 import { FilterBar } from '@/components/FilterBar';
 import { CountdownCards } from '@/components/CountdownCards';
@@ -17,13 +19,25 @@ function HomePage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [showAll, setShowAll] = useState(false);
 
-  const stats = getStats();
-  const hiddenGems = getHiddenGems(6);
-  const deadlines = getUpcomingDeadlines(6);
-  const filtered = filterCompetitions(ALL_COMPETITIONS, filters);
+  const { competitions, loading, source, error } = useCompetitions();
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+
+  const stats = getStats(competitions);
+  const hiddenGems = getHiddenGems(6, competitions);
+  const deadlines = getUpcomingDeadlines(6, competitions);
+  const filtered = filterCompetitions(competitions, filters);
   const displayCount = showAll ? filtered.length : Math.min(filtered.length, 18);
 
-  const hasActiveFilters = filters.search || filters.recurrenceCategory || filters.difficulty || filters.effortLevel || filters.aiPolicy || filters.mode || filters.skillDomains.length > 0;
+  const hasActiveFilters =
+    filters.search ||
+    filters.platforms.length > 0 ||
+    filters.recurrenceCategory ||
+    filters.difficulty ||
+    filters.effortLevel ||
+    filters.aiPolicy ||
+    filters.mode ||
+    filters.careerOutcome ||
+    filters.skillDomains.length > 0;
 
   return (
     <div className="min-h-screen">
@@ -37,7 +51,7 @@ function HomePage() {
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#6b7a99] uppercase tracking-wider">
               <span className="w-1.5 h-1.5 bg-[#00e5a0] rounded-full badge-pulse" />
-              {stats.totalCompetitions} tracked
+              {loading ? 'syncing...' : `${stats.totalCompetitions} tracked`}
             </span>
           </div>
         </div>
@@ -47,14 +61,22 @@ function HomePage() {
         {/* Hero */}
         <HeroSection stats={stats} />
 
-        {/* Countdown section - only when no filters active */}
-        {!hasActiveFilters && deadlines.length > 0 && (
-          <CountdownCards competitions={deadlines} />
+        {error && (
+          <div className="mb-4 rounded-md border border-[#f0c04033] bg-[#f0c04012] px-3 py-2 text-[11px] font-mono text-[#f0c040]">
+            {error}
+          </div>
         )}
+
+        {/* Countdown section - only when no filters active */}
+        {!hasActiveFilters && deadlines.length > 0 && <CountdownCards competitions={deadlines} />}
 
         {/* Hidden gems - only when no filters active */}
         {!hasActiveFilters && (
-          <HiddenGems competitions={hiddenGems} />
+          <HiddenGems
+            competitions={hiddenGems}
+            isBookmarked={isBookmarked}
+            onToggleBookmark={toggleBookmark}
+          />
         )}
 
         {/* Filter + Grid */}
@@ -68,7 +90,10 @@ function HomePage() {
           {filtered.length === 0 ? (
             <div className="glass-card rounded-lg p-12 text-center">
               <p className="text-[#6b7a99] text-sm">No competitions match your filters.</p>
-              <button onClick={() => setFilters(DEFAULT_FILTER_STATE)} className="mt-3 text-[#00e5a0] text-xs font-mono uppercase hover:underline">
+              <button
+                onClick={() => setFilters(DEFAULT_FILTER_STATE)}
+                className="mt-3 text-[#00e5a0] text-xs font-mono uppercase hover:underline"
+              >
                 Reset Filters
               </button>
             </div>
@@ -76,7 +101,12 @@ function HomePage() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
                 {filtered.slice(0, displayCount).map(c => (
-                  <CompetitionCard key={c.id} competition={c} />
+                  <CompetitionCard
+                    key={c.id}
+                    competition={c}
+                    isBookmarked={isBookmarked}
+                    onToggleBookmark={toggleBookmark}
+                  />
                 ))}
               </div>
               {filtered.length > displayCount && (
@@ -105,6 +135,9 @@ function HomePage() {
           </p>
           <p className="text-[9px] font-mono text-[#3d4655] mt-1">
             Sources: Devpost · Kaggle · Unstop · Zindi · AIcrowd · DrivenData · HeroX · Topcoder · and {stats.platformsTracked - 8}+ more
+          </p>
+          <p className="mt-2 text-[10px] font-mono uppercase tracking-wider text-[#6b7a99]">
+            <span className={source === 'api' ? 'text-[#00e5a0]' : 'text-[#f0c040]'}>●</span> {source === 'api' ? 'Live' : 'Offline'}
           </p>
         </div>
       </footer>

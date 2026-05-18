@@ -15,34 +15,34 @@ export const ALL_COMPETITIONS: Competition[] = [
 
 // ─── Computed helpers ───
 
-export function getHiddenGems(limit = 6): Competition[] {
-  return [...ALL_COMPETITIONS]
+export function getHiddenGems(limit = 6, competitions: Competition[] = ALL_COMPETITIONS): Competition[] {
+  return [...competitions]
     .filter(c => (c.rarityScore ?? 0) >= 7 && c.validity === 'active')
     .sort((a, b) => (b.rarityScore ?? 0) - (a.rarityScore ?? 0))
     .slice(0, limit);
 }
 
-export function getUpcomingDeadlines(limit = 5): Competition[] {
+export function getUpcomingDeadlines(limit = 5, competitions: Competition[] = ALL_COMPETITIONS): Competition[] {
   const now = new Date().toISOString();
-  return ALL_COMPETITIONS
+  return competitions
     .filter(c => c.submissionDeadline && c.submissionDeadline > now)
     .sort((a, b) => (a.submissionDeadline ?? '').localeCompare(b.submissionDeadline ?? ''))
     .slice(0, limit);
 }
 
-export function getFreshlyOpened(limit = 6): Competition[] {
-  return ALL_COMPETITIONS
+export function getFreshlyOpened(limit = 6, competitions: Competition[] = ALL_COMPETITIONS): Competition[] {
+  return competitions
     .filter(c => c.status === 'open' && c.recurrenceCategory === '2026_specific')
     .slice(0, limit);
 }
 
-export function getStats(): PlatformStats {
-  const active = ALL_COMPETITIONS.filter(c => c.status === 'open' || c.status === 'upcoming');
-  const platforms = new Set(ALL_COMPETITIONS.map(c => c.platform));
-  const totalBounty = ALL_COMPETITIONS.reduce((sum, c) => sum + (c.prizePoolUsd || 0), 0);
-  const gems = ALL_COMPETITIONS.filter(c => (c.rarityScore ?? 0) >= 7);
+export function getStats(competitions: Competition[] = ALL_COMPETITIONS): PlatformStats {
+  const active = competitions.filter(c => c.status === 'open' || c.status === 'upcoming');
+  const platforms = new Set(competitions.map(c => c.platform));
+  const totalBounty = competitions.reduce((sum, c) => sum + (c.prizePoolUsd || 0), 0);
+  const gems = competitions.filter(c => (c.rarityScore ?? 0) >= 7);
   return {
-    totalCompetitions: ALL_COMPETITIONS.length,
+    totalCompetitions: competitions.length,
     activeNow: active.length,
     totalBountyUsd: totalBounty,
     platformsTracked: platforms.size,

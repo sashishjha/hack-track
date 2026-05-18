@@ -1,154 +1,180 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const { supabase, supabaseAdmin } = require('../db/supabase');
 
-const DATA_FILE = path.join(__dirname, '../../data/hackathons.json');
+const writeClient = supabaseAdmin || supabase;
 
-// Helper to read hackathons data
-const readHackathons = () => {
-  try {
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Error reading data:', err);
-    return { hackathons: [], lastUpdated: null };
+function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+function mapDbRowToCompetition(row) {
+  if (!row) return row;
+  const mapped = {};
+  for (const [key, value] of Object.entries(row)) {
+    mapped[snakeToCamel(key)] = value;
   }
-};
+  return mapped;
+}
 
-// Helper to write hackathons data
-const writeHackathons = (data) => {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (err) {
-    console.error('Error writing data:', err);
-    return false;
+function mapCompetitionToDbRow(comp) {
+  if (!comp || typeof comp !== 'object') return comp;
+  const mapped = {};
+  for (const [key, value] of Object.entries(comp)) {
+    mapped[camelToSnake(key)] = value;
   }
-};
+  return mapped;
+}
 
 // GET all hackathons
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 50;
+
   try {
-    const data = readHackathons();
-    const { filter, search, limit = 100, page = 1 } = req.query;
+    let query = supabase.from('competitions').select('*');
 
-    let hackathons = data.hackathons || [];
+    if (req.query.search) query = query.ilike('title', `%${req.query.search}%`);
+    if (req.query.platform) query = query.eq('platform', req.query.platform);
+    if (req.query.difficulty) query = query.eq('difficulty', req.query.difficulty);
 
-    // Filter by category
-    if (filter && filter !== 'all') {
-      hackathons = hackathons.filter(h => h.category === filter);
-    }
+    const category = req.query.category || req.query.filter;
+    if (category && category !== 'all') query = query.eq('recurrence_category', category);
 
-    // Search by text
-    if (search) {
-      const q = search.toLowerCase();
-      hackathons = hackathons.filter(h =>
-        h.name.toLowerCase().includes(q) ||
-        h.description.toLowerCase().includes(q) ||
-        h.tags?.some(t => t.toLowerCase().includes(q))
-      );
-    }
+    query = query
+      .range((page - 1) * limit, page * limit - 1)
+      .order('submission_deadline', { ascending: true, nullsFirst: false });
 
-    // Pagination
-    const start = (page - 1) * limit;
-    const paginatedHackathons = hackathons.slice(start, start + parseInt(limit));
+    const { data, error } = await query;
+    if (error) throw error;
 
-    res.json({
-      success: true,
-      total: hackathons.length,
-      limit: parseInt(limit),
-      page: parseInt(page),
-      data: paginatedHackathons,
-      lastUpdated: data.lastUpdated
-    });
+    const hackathons = Array.isArray(data) ? data.map(mapDbRowToCompetition) : [];
+    return res.json({ hackathons, page, limit });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error('Failed to fetch competitions from Supabase:', err.message);
+    return res.status(200).json({
+      hackathons: [],
+      page,
+      limit,
+      fallback: true,
+      error: 'Using empty fallback because database query failed',
+    });
   }
 });
 
 // GET single hackathon
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const data = readHackathons();
-    const hackathon = data.hackathons.find(h => h.id === req.params.id);
+    const { data, error } = await supabase
+      .from('competitions')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
 
-    if (!hackathon) {
-      return res.status(404).json({ success: false, error: 'Hackathon not found' });
+    if (error || !data) {
+      return res.status(404).json({ error: 'Not found' });
     }
 
-    res.json({ success: true, data: hackathon });
+    return res.json(mapDbRowToCompetition(data));
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
-// POST - Add/Update hackathons (admin)
-router.post('/', (req, res) => {
+// POST - Add/Update hackathon
+router.post('/', async (req, res) => {
   try {
-    const { hackathon } = req.body;
+    const payload = req.body?.hackathon ? req.body.hackathon : req.body;
+    const row = mapCompetitionToDbRow(payload);
 
-    if (!hackathon || !hackathon.name) {
-      return res.status(400).json({ success: false, error: 'Invalid hackathon data' });
+    const { data, error } = await writeClient
+      .from('competitions')
+      .upsert(row, { onConflict: 'id' })
+      .select();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    const data = readHackathons();
-    hackathon.id = hackathon.id || `hack_${Date.now()}`;
-    hackathon.addedAt = hackathon.addedAt || new Date().toISOString();
-
-    // Check if exists and update or add
-    const idx = data.hackathons.findIndex(h => h.id === hackathon.id);
-    if (idx >= 0) {
-      data.hackathons[idx] = { ...data.hackathons[idx], ...hackathon };
-    } else {
-      data.hackathons.push(hackathon);
-    }
-
-    data.lastUpdated = new Date().toISOString();
-    writeHackathons(data);
-
-    res.json({ success: true, data: hackathon, message: 'Hackathon saved' });
+    return res.json({ success: true, data: (data || []).map(mapDbRowToCompetition) });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
-// POST - Refresh/Update data from sources
+// POST - Refresh/Update data from scraper adapters
 router.post('/refresh', async (req, res) => {
   try {
-    // This would trigger the scraper
-    // For now, just return success
-    const data = readHackathons();
-    data.lastUpdated = new Date().toISOString();
-    writeHackathons(data);
+    const adapterFactories = req.app?.locals?.adapterFactories || [];
+    if (!adapterFactories.length) {
+      return res.status(501).json({ success: false, error: 'No adapters registered for refresh' });
+    }
 
-    res.json({
+    const adapters = adapterFactories.map(createAdapter => createAdapter());
+    const results = await Promise.all(adapters.map(adapter => adapter.run()));
+
+    const platformSummary = results.map(result => ({
+      platform: result.platform,
+      fetched: result.competitions.length,
+      errors: result.errors,
+    }));
+
+    const allCompetitions = results.flatMap(result => result.competitions || []);
+    const uniqueById = new Map();
+    for (const comp of allCompetitions) {
+      if (!comp || !comp.id) continue;
+      const cleaned = { ...comp };
+      delete cleaned.sourceAdapter;
+      delete cleaned.lastCheckedAt;
+      if (!cleaned.source) cleaned.source = 'scraper';
+      uniqueById.set(cleaned.id, cleaned);
+    }
+
+    const rows = Array.from(uniqueById.values()).map(mapCompetitionToDbRow);
+
+    if (rows.length > 0) {
+      const { error } = await writeClient
+        .from('competitions')
+        .upsert(rows, { onConflict: 'id' });
+
+      if (error) {
+        return res.status(500).json({ success: false, error: error.message, platformSummary });
+      }
+    }
+
+    return res.json({
       success: true,
-      message: 'Data refresh initiated',
-      lastUpdated: data.lastUpdated
+      message: 'Adapters refreshed and competitions upserted',
+      adaptersRun: adapters.length,
+      fetchedCount: allCompetitions.length,
+      upsertedCount: rows.length,
+      platformSummary,
+      lastUpdated: new Date().toISOString(),
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // DELETE hackathon
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const data = readHackathons();
-    const idx = data.hackathons.findIndex(h => h.id === req.params.id);
+    const { error } = await writeClient
+      .from('competitions')
+      .delete()
+      .eq('id', req.params.id);
 
-    if (idx < 0) {
-      return res.status(404).json({ success: false, error: 'Hackathon not found' });
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    data.hackathons.splice(idx, 1);
-    data.lastUpdated = new Date().toISOString();
-    writeHackathons(data);
-
-    res.json({ success: true, message: 'Hackathon deleted' });
+    return res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 

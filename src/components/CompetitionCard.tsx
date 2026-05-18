@@ -1,29 +1,39 @@
 import { useState, useEffect } from 'react';
+import { Link } from '@tanstack/react-router';
+import { Star } from 'lucide-react';
 import type { Competition } from '@/lib/types';
 import { PLATFORMS, RECURRENCE_COLORS, DIFFICULTY_COLORS, AI_POLICY_LABELS } from '@/lib/constants';
 
-function CountdownTimer({ deadline }: { deadline: string }) {
+export function CountdownTimer({ deadline }: { deadline: string }) {
   const [timeLeft, setTimeLeft] = useState('');
   const [urgency, setUrgency] = useState<'ok' | 'soon' | 'hot'>('ok');
 
   useEffect(() => {
     const update = () => {
       const diff = new Date(deadline).getTime() - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); return; }
+      if (diff <= 0) {
+        setTimeLeft('Ended');
+        return;
+      }
+
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
+
       if (d > 7) setUrgency('ok');
       else if (d > 2) setUrgency('soon');
       else setUrgency('hot');
+
       setTimeLeft(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
     };
+
     update();
     const i = setInterval(update, 60000);
     return () => clearInterval(i);
   }, [deadline]);
 
   const colors = { ok: '#f0c040', soon: '#ff8c42', hot: '#ff5c35' };
+
   return (
     <span className="font-mono text-xs font-semibold" style={{ color: colors[urgency] }}>
       {timeLeft}
@@ -31,23 +41,40 @@ function CountdownTimer({ deadline }: { deadline: string }) {
   );
 }
 
-export function CompetitionCard({ competition: c }: { competition: Competition }) {
+interface CompetitionCardProps {
+  competition: Competition;
+  isBookmarked?: (id: string) => boolean;
+  onToggleBookmark?: (id: string) => void;
+}
+
+export function CompetitionCard({ competition: c, isBookmarked, onToggleBookmark }: CompetitionCardProps) {
   const platformInfo = PLATFORMS[c.platform] || PLATFORMS.other;
   const recColor = RECURRENCE_COLORS[c.recurrenceCategory] || '#6b7a99';
   const diffColor = DIFFICULTY_COLORS[c.difficulty] || '#6b7a99';
   const isGem = (c.rarityScore ?? 0) >= 7;
+  const bookmarked = isBookmarked?.(c.id) ?? false;
 
   return (
-    <a
-      href={c.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group block glass-card rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1 neon-glow-hover"
+    <article
+      className="group relative block glass-card rounded-lg overflow-hidden transition-all duration-200 hover:-translate-y-1 neon-glow-hover"
       style={{ borderTop: `2px solid ${recColor}` }}
     >
-      <div className="p-5 flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={event => {
+          event.preventDefault();
+          event.stopPropagation();
+          onToggleBookmark?.(c.id);
+        }}
+        className="absolute right-3 top-3 z-10 rounded-md border border-[#1e2d45] bg-[#0d1120]/95 p-1.5 text-[#6b7a99] transition-colors hover:text-[#f0c040]"
+        aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
+      >
+        <Star className={`h-3.5 w-3.5 ${bookmarked ? 'fill-[#f0c040] text-[#f0c040]' : ''}`} />
+      </button>
+
+      <Link to="/competition/$slug" params={{ slug: c.slug }} className="block p-5 flex flex-col gap-3">
         {/* Top: badges */}
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 pr-8">
           <span
             className="text-[9px] font-semibold px-2 py-0.5 rounded uppercase tracking-wider"
             style={{ background: platformInfo.color + '22', color: platformInfo.color, border: `1px solid ${platformInfo.color}33` }}
@@ -82,14 +109,10 @@ export function CompetitionCard({ competition: c }: { competition: Competition }
         <h3 className="font-display text-base font-bold leading-tight group-hover:text-[#00e5a0] transition-colors">
           {c.title}
         </h3>
-        {c.organizer && (
-          <p className="text-[11px] text-[#6b7a99] -mt-2">{c.organizer}</p>
-        )}
+        {c.organizer && <p className="text-[11px] text-[#6b7a99] -mt-2">{c.organizer}</p>}
 
         {/* Description */}
-        <p className="text-[12px] text-[#8896b0] leading-relaxed line-clamp-3">
-          {c.description}
-        </p>
+        <p className="text-[12px] text-[#8896b0] leading-relaxed line-clamp-3">{c.description}</p>
 
         {/* Meta grid */}
         <div className="grid grid-cols-2 gap-2">
@@ -137,10 +160,10 @@ export function CompetitionCard({ competition: c }: { competition: Competition }
             </div>
           )}
           <span className="inline-flex items-center gap-1 text-[11px] text-[#00e5a0] font-medium group-hover:underline ml-auto">
-            Visit →
+            Full Details →
           </span>
         </div>
-      </div>
-    </a>
+      </Link>
+    </article>
   );
 }

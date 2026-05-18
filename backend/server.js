@@ -2,10 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
 const { discoverNewHackathons } = require('./discovery/search_crawler');
+const DevpostAdapter = require('./adapters/devpost');
+const KaggleAdapter = require('./adapters/kaggle');
+const DevfolioAdapter = require('./adapters/devfolio');
+const UnstopAdapter = require('./adapters/unstop');
+const MlhAdapter = require('./adapters/mlh');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Adapter registry used by /api/hackathons/refresh
+app.locals.adapterFactories = [
+  () => new DevpostAdapter(),
+  () => new KaggleAdapter(),
+  () => new DevfolioAdapter(),
+  () => new UnstopAdapter(),
+  () => new MlhAdapter(),
+];
 
 // Middleware
 app.use(cors());
@@ -58,6 +72,7 @@ app.listen(PORT, () => {
   console.log(`🚀 HackTrack API server running on http://localhost:${PORT}`);
   console.log(`📊 API: http://localhost:${PORT}/api/hackathons`);
   console.log(`🔍 Discovery: POST http://localhost:${PORT}/api/discover`);
+  console.log('🕸️ Adapter refresh platforms:', app.locals.adapterFactories.length);
 });
 
 module.exports = app;

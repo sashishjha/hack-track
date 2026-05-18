@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from '@tanstack/react-router';
 import type { Competition } from '@/lib/types';
 import { PLATFORMS } from '@/lib/constants';
 
@@ -47,7 +48,7 @@ export function CountdownCards({ competitions }: { competitions: Competition[] }
         {competitions.map(c => {
           const p = PLATFORMS[c.platform] || PLATFORMS.other;
           return (
-            <a key={c.id} href={c.url} target="_blank" rel="noopener noreferrer"
+            <Link key={c.id} to="/competition/$slug" params={{ slug: c.slug }}
               className="glass-card rounded-lg p-4 hover:-translate-y-0.5 transition-all duration-200 neon-glow-hover group">
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -60,7 +61,7 @@ export function CountdownCards({ competitions }: { competitions: Competition[] }
               </div>
               <h3 className="font-display text-sm font-bold mb-3 group-hover:text-[#00e5a0] transition-colors line-clamp-1">{c.title}</h3>
               <LiveCountdown deadline={c.submissionDeadline!} label={c.title} />
-            </a>
+            </Link>
           );
         })}
       </div>

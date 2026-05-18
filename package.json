@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "discover": "node -e \"require('./backend/discovery/search_crawler').discoverNewHackathons()\"",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:seed": "node backend/db/seed.js"
   },
   "keywords": ["hackathon", "competition", "tracker", "intelligence", "scraper"],
   "author": "S.J.",

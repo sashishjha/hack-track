@@ -1097,11 +1097,199 @@ export interface PlatformStats {
 }
 </file>
 
+<file path="vite.config.mts">
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
+</file>
+
+<file path="backend/routes/hackathons.js">
+// Helper to read hackathons data
+const readHackathons = () =>
+⋮----
+// Helper to write hackathons data
+const writeHackathons = (data) =>
+⋮----
+// GET all hackathons
+⋮----
+// Filter by category
+⋮----
+// Search by text
+⋮----
+// Pagination
+⋮----
+// GET single hackathon
+⋮----
+// POST - Add/Update hackathons (admin)
+⋮----
+// Check if exists and update or add
+⋮----
+// POST - Refresh/Update data from sources
+⋮----
+// This would trigger the scraper
+// For now, just return success
+⋮----
+// DELETE hackathon
+</file>
+
+<file path="backend/server.js">
+// Middleware
+⋮----
+// API Routes
+⋮----
+// Manual trigger for Web Discovery Engine
+⋮----
+// Scheduled Jobs — Run Discovery Engine every 24 hours at midnight
+⋮----
+// Health check
+⋮----
+// Error handling middleware
+⋮----
+// 404 handler
+⋮----
+// Start server
+</file>
+
 <file path="src/lib/utils.ts">
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 ⋮----
 export function cn(...inputs: ClassValue[])
+</file>
+
+<file path="src/router.tsx">
+import { QueryClient } from "@tanstack/react-query";
+import { createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+⋮----
+export const getRouter = () =>
+</file>
+
+<file path="src/server.ts">
+type ServerEntry = {
+  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
+};
+⋮----
+async function getServerEntry(): Promise<ServerEntry>
+⋮----
+function errorResponse(error?: unknown): Response
+⋮----
+async fetch(request: Request, env: unknown, ctx: unknown)
+</file>
+
+<file path="src/start.ts">
+import { createStart, createMiddleware } from "@tanstack/react-start";
+</file>
+
+<file path=".env.example">
+# ─── HackTrack Environment ───
+PORT=5001
+
+# Get a FREE key at: https://aistudio.google.com/app/apikey
+GEMINI_API_KEY=your_gemini_api_key_here
+</file>
+
+<file path=".prettierignore">
+node_modules
+dist
+.output
+.vinxi
+pnpm-lock.yaml
+package-lock.json
+bun.lock
+routeTree.gen.ts
+</file>
+
+<file path=".prettierrc">
+{
+  "printWidth": 100,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "all"
+}
+</file>
+
+<file path="eslint.config.js">
+
+</file>
+
+<file path="README.md">
+# HackTrack — Global Competition Intelligence
+
+A live, AI-powered platform tracking **95+ hackathons, competitions, bounties, and coding contests** across the internet. Built with a dark hacker aesthetic.
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5001
+
+## Features
+
+- 🎯 **95 seeded competitions** across 15 categories (2026-specific, daily, weekly, monthly, annual, always-open)
+- 🔍 **AI Web Discovery Engine** — automatically finds new hackathons using DuckDuckGo + Google Gemini
+- 🎨 **Dark hacker aesthetic** — IBM Plex Mono, Syne fonts, green-on-dark theme
+- 📊 **Multi-dimensional filtering** — by platform, skill domain, difficulty, effort level, AI policy, mode
+- 💎 **Hidden Gems** — rarity scoring system to surface low-competition, high-reward opportunities
+- ⏰ **Live countdowns** — tracks nearest deadlines
+- 🤖 **Platform scrapers** — Devpost and Kaggle adapters with retry and rate limiting
+
+## Project Docs
+
+See `already-done-job/` for:
+- `HANDOFF.md` — Complete architecture, schema, file map, and roadmap
+- `CHANGELOG.md` — Detailed history of all work done
+- `PROMPT_FOR_NEW_AI.md` — Quick-start prompt to hand off to another AI
+
+## Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | React 19, TanStack Router, Tailwind CSS v4, Vite 7, TypeScript |
+| Backend | Node.js, Express, Axios, Cheerio |
+| AI Discovery | Google Gemini 1.5 Flash (free), DuckDuckGo |
+| Scheduling | node-cron |
+
+## License
+
+MIT — Conceived & engineered by S.J.
+</file>
+
+<file path="tsconfig.json">
+{
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.mts", "eslint.config.js"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+
+    /* Bundler mode */
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+
+    /* Linting */
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
 </file>
 
 <file path="src/routes/__root.tsx">
@@ -1127,37 +1315,6 @@ reset();
 function RootShell(
 ⋮----
 function RootComponent()
-</file>
-
-<file path="src/routes/index.tsx">
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import type { FilterState } from '@/lib/types';
-import { DEFAULT_FILTER_STATE } from '@/lib/constants';
-import { ALL_COMPETITIONS, getHiddenGems, getUpcomingDeadlines, getStats, filterCompetitions } from '@/data';
-import { HeroSection } from '@/components/HeroSection';
-import { FilterBar } from '@/components/FilterBar';
-import { CountdownCards } from '@/components/CountdownCards';
-import { HiddenGems } from '@/components/HiddenGems';
-import { CompetitionCard } from '@/components/CompetitionCard';
-⋮----
-{/* Nav */}
-⋮----
-{/* Hero */}
-⋮----
-{/* Countdown section - only when no filters active */}
-⋮----
-onClick=
-⋮----
-{/* Footer */}
-</file>
-
-<file path="src/router.tsx">
-import { QueryClient } from "@tanstack/react-query";
-import { createRouter } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
-⋮----
-export const getRouter = () =>
 </file>
 
 <file path="src/routeTree.gen.ts">
@@ -1216,22 +1373,6 @@ interface Register {
   }
 </file>
 
-<file path="src/server.ts">
-type ServerEntry = {
-  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
-};
-⋮----
-async function getServerEntry(): Promise<ServerEntry>
-⋮----
-function errorResponse(error?: unknown): Response
-⋮----
-async fetch(request: Request, env: unknown, ctx: unknown)
-</file>
-
-<file path="src/start.ts">
-import { createStart, createMiddleware } from "@tanstack/react-start";
-</file>
-
 <file path="src/styles.css">
 @source "../src";
 ⋮----
@@ -1284,124 +1425,6 @@ body {
 .text-gradient {
 .badge-pulse {
 .shimmer {
-</file>
-
-<file path=".prettierignore">
-node_modules
-dist
-.output
-.vinxi
-pnpm-lock.yaml
-package-lock.json
-bun.lock
-routeTree.gen.ts
-</file>
-
-<file path=".prettierrc">
-{
-  "printWidth": 100,
-  "semi": true,
-  "singleQuote": false,
-  "trailingComma": "all"
-}
-</file>
-
-<file path="eslint.config.js">
-
-</file>
-
-<file path="tsconfig.json">
-{
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.mts", "eslint.config.js"],
-  "compilerOptions": {
-    "target": "ES2022",
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
-
-    /* Bundler mode */
-    "moduleResolution": "Bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": false,
-    "noEmit": true,
-
-    /* Linting */
-    "skipLibCheck": true,
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
-</file>
-
-<file path="vite.config.mts">
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import tsConfigPaths from "vite-tsconfig-paths";
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { cloudflare } from "@cloudflare/vite-plugin";
-</file>
-
-<file path="backend/routes/hackathons.js">
-// Helper to read hackathons data
-const readHackathons = () =>
-⋮----
-// Helper to write hackathons data
-const writeHackathons = (data) =>
-⋮----
-// GET all hackathons
-⋮----
-// Filter by category
-⋮----
-// Search by text
-⋮----
-// Pagination
-⋮----
-// GET single hackathon
-⋮----
-// POST - Add/Update hackathons (admin)
-⋮----
-// Check if exists and update or add
-⋮----
-// POST - Refresh/Update data from sources
-⋮----
-// This would trigger the scraper
-// For now, just return success
-⋮----
-// DELETE hackathon
-</file>
-
-<file path="backend/server.js">
-// Middleware
-⋮----
-// API Routes
-⋮----
-// Manual trigger for Web Discovery Engine
-⋮----
-// Scheduled Jobs — Run Discovery Engine every 24 hours at midnight
-⋮----
-// Health check
-⋮----
-// Error handling middleware
-⋮----
-// 404 handler
-⋮----
-// Start server
-</file>
-
-<file path=".env.example">
-# ─── HackTrack Environment ───
-PORT=5001
-
-# Get a FREE key at: https://aistudio.google.com/app/apikey
-GEMINI_API_KEY=your_gemini_api_key_here
 </file>
 
 <file path=".gitignore">
@@ -1517,50 +1540,27 @@ build/
 }
 </file>
 
-<file path="README.md">
-# HackTrack — Global Competition Intelligence
-
-A live, AI-powered platform tracking **95+ hackathons, competitions, bounties, and coding contests** across the internet. Built with a dark hacker aesthetic.
-
-## Quick Start
-
-```bash
-npm install
-npm run dev
-```
-
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:5001
-
-## Features
-
-- 🎯 **95 seeded competitions** across 15 categories (2026-specific, daily, weekly, monthly, annual, always-open)
-- 🔍 **AI Web Discovery Engine** — automatically finds new hackathons using DuckDuckGo + Google Gemini
-- 🎨 **Dark hacker aesthetic** — IBM Plex Mono, Syne fonts, green-on-dark theme
-- 📊 **Multi-dimensional filtering** — by platform, skill domain, difficulty, effort level, AI policy, mode
-- 💎 **Hidden Gems** — rarity scoring system to surface low-competition, high-reward opportunities
-- ⏰ **Live countdowns** — tracks nearest deadlines
-- 🤖 **Platform scrapers** — Devpost and Kaggle adapters with retry and rate limiting
-
-## Project Docs
-
-See `already-done-job/` for:
-- `HANDOFF.md` — Complete architecture, schema, file map, and roadmap
-- `CHANGELOG.md` — Detailed history of all work done
-- `PROMPT_FOR_NEW_AI.md` — Quick-start prompt to hand off to another AI
-
-## Tech Stack
-
-| Layer | Tech |
-|-------|------|
-| Frontend | React 19, TanStack Router, Tailwind CSS v4, Vite 7, TypeScript |
-| Backend | Node.js, Express, Axios, Cheerio |
-| AI Discovery | Google Gemini 1.5 Flash (free), DuckDuckGo |
-| Scheduling | node-cron |
-
-## License
-
-MIT — Conceived & engineered by S.J.
+<file path="src/routes/index.tsx">
+import { useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import type { FilterState } from '@/lib/types';
+import { DEFAULT_FILTER_STATE } from '@/lib/constants';
+import { ALL_COMPETITIONS, getHiddenGems, getUpcomingDeadlines, getStats, filterCompetitions } from '@/data';
+import { HeroSection } from '@/components/HeroSection';
+import { FilterBar } from '@/components/FilterBar';
+import { CountdownCards } from '@/components/CountdownCards';
+import { HiddenGems } from '@/components/HiddenGems';
+import { CompetitionCard } from '@/components/CompetitionCard';
+⋮----
+{/* Nav */}
+⋮----
+{/* Hero */}
+⋮----
+{/* Countdown section - only when no filters active */}
+⋮----
+onClick=
+⋮----
+{/* Footer */}
 </file>
 
 </files>
