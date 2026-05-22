@@ -19,7 +19,7 @@ function HomePage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [showAll, setShowAll] = useState(false);
 
-  const { competitions, loading, source, error } = useCompetitions();
+  const { competitions, loading, source, error, isRefreshing, handleRefresh } = useCompetitions();
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const stats = getStats(competitions);
@@ -48,11 +48,18 @@ function HomePage() {
             <span className="text-[#e8edf5]">HACK</span>
             <span className="text-[#00e5a0]">TRACK</span>
           </span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#6b7a99] uppercase tracking-wider">
               <span className="w-1.5 h-1.5 bg-[#00e5a0] rounded-full badge-pulse" />
-              {loading ? 'syncing...' : `${stats.totalCompetitions} tracked`}
+              {loading ? 'loading...' : `${stats.totalCompetitions} tracked`}
             </span>
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing || loading}
+              className="px-3 py-1 bg-[#1e2d45]/50 border border-[#1e2d45] rounded hover:border-[#00e5a0] text-[#00e5a0] text-[10px] font-mono uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isRefreshing ? 'Syncing...' : 'Sync Data'}
+            </button>
           </div>
         </div>
       </nav>

@@ -62,6 +62,9 @@ function normalizeCompetition(c: ApiCompetition): Competition {
 
 export async function fetchCompetitions(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
+  if (!params.has('limit')) {
+    params.set('limit', '10000'); // Effectively unlimited
+  }
   const query = params.toString();
   const res = await fetch(`${API_BASE}/hackathons${query ? `?${query}` : ''}`);
 
@@ -84,4 +87,16 @@ export async function fetchCompetition(id: string) {
 
   const data = (await res.json()) as ApiCompetition;
   return normalizeCompetition(data);
+}
+
+export async function triggerRefresh() {
+  const res = await fetch(`${API_BASE}/hackathons/refresh`, {
+    method: 'POST',
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to trigger refresh (${res.status})`);
+  }
+
+  return await res.json();
 }

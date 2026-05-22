@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { fetchCompetitions } from '@/lib/api';
+import { useEffect, useState, useCallback } from 'react';
+import { fetchCompetitions, triggerRefresh } from '@/lib/api';
 import { ALL_COMPETITIONS } from '@/data';
 import type { Competition } from '@/lib/types';
 
@@ -8,13 +8,12 @@ export function useCompetitions() {
   const [loading, setLoading] = useState(true);
   const [source, setSource] = useState<'api' | 'static'>('static');
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-
+  const loadData = useCallback(() => {
+    setLoading(true);
     fetchCompetitions()
       .then(data => {
-        if (!active) return;
         if (Array.isArray(data.hackathons) && data.hackathons.length > 0) {
           setCompetitions(data.hackathons);
           setSource('api');
@@ -26,19 +25,29 @@ export function useCompetitions() {
         setError('Live API returned no competitions. Showing local backup data.');
       })
       .catch(() => {
-        if (!active) return;
         setSource('static');
         setError('Live API unavailable. Showing local backup data.');
       })
       .finally(() => {
-        if (!active) return;
         setLoading(false);
       });
-
-    return () => {
-      active = false;
-    };
   }, []);
 
-  return { competitions, loading, source, error };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await triggerRefresh();
+      loadData();
+    } catch (err: any) {
+      setError(err.message || 'Failed to sync with sources');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  return { competitions, loading, source, error, isRefreshing, handleRefresh };
 }
