@@ -22,8 +22,6 @@ build/
 
 # Env
 .env
-.env.local
-.dev.vars
 
 # Wrangler / Cloudflare
 .wrangler/
