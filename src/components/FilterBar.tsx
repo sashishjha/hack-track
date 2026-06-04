@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FilterState, SkillDomain, Difficulty, EffortLevel, AiPolicy, RecurrenceCategory } from '@/lib/types';
 import { SKILL_DOMAIN_LABELS, DIFFICULTY_LABELS, EFFORT_LEVEL_LABELS, AI_POLICY_LABELS, RECURRENCE_LABELS, DEFAULT_FILTER_STATE } from '@/lib/constants';
+import { AdvancedFilterBuilder } from './AdvancedFilterBuilder';
 
 interface Props {
   filters: FilterState;
@@ -90,6 +91,19 @@ export function FilterBar({ filters, onChange, totalResults }: Props) {
             </svg>
             Filters{activeFilterCount > 0 && ` (${activeFilterCount})`}
           </button>
+          <button
+            onClick={() => {
+              onChange({ ...filters, advancedMode: !filters.advancedMode });
+              setExpanded(true); // Auto-expand when toggling mode
+            }}
+            className={`px-3 py-2 border rounded-md text-[11px] font-mono uppercase tracking-wider transition-colors ${
+              filters.advancedMode
+                ? 'bg-[#00e5a0]/10 border-[#00e5a0] text-[#00e5a0]'
+                : 'bg-[#0d1120] border-[#1e2d45] text-[#6b7a99] hover:border-[#00e5a0] hover:text-[#e8edf5]'
+            }`}
+          >
+            Terminal Mode {filters.advancedMode ? 'ON' : 'OFF'}
+          </button>
           {activeFilterCount > 0 && (
             <button onClick={reset} className="text-[10px] text-[#ff5c35] font-mono uppercase hover:underline">
               Clear
@@ -116,23 +130,44 @@ export function FilterBar({ filters, onChange, totalResults }: Props) {
 
       {/* Expanded filters */}
       {expanded && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-3 border-t border-[#1e2d45] animate-fade-in">
-          <Select label="Skill Domain" value={filters.skillDomains[0] || null} options={domainOptions} onChange={v => onChange({ ...filters, skillDomains: v ? [v as SkillDomain] : [] })} />
-          <Select label="Difficulty" value={filters.difficulty} options={difficultyOptions} onChange={v => onChange({ ...filters, difficulty: v as Difficulty | null })} />
-          <Select label="Effort" value={filters.effortLevel} options={effortOptions} onChange={v => onChange({ ...filters, effortLevel: v as EffortLevel | null })} />
-          <Select label="AI Policy" value={filters.aiPolicy} options={aiOptions} onChange={v => onChange({ ...filters, aiPolicy: v as AiPolicy | null })} />
-          <Select
-            label="Mode"
-            value={filters.mode}
-            options={[['remote', '🌐 Remote'], ['physical', '📍 Physical'], ['hybrid', '🔄 Hybrid']]}
-            onChange={v => onChange({ ...filters, mode: v as any })}
-          />
-          <Select
-            label="Sort By"
-            value={filters.sortBy}
-            options={[['deadline', 'Deadline'], ['prize', 'Prize Pool'], ['rarity', 'ROI Score'], ['title', 'Name']]}
-            onChange={v => onChange({ ...filters, sortBy: (v || 'deadline') as any })}
-          />
+        <div className="pt-3 border-t border-[#1e2d45] animate-fade-in mt-4">
+          {filters.advancedMode ? (
+            <AdvancedFilterBuilder 
+              group={filters.advancedQuery} 
+              onChange={g => onChange({ ...filters, advancedQuery: g })} 
+            />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <Select label="Skill Domain" value={filters.skillDomains[0] || null} options={domainOptions} onChange={v => onChange({ ...filters, skillDomains: v ? [v as SkillDomain] : [] })} />
+              <Select label="Difficulty" value={filters.difficulty} options={difficultyOptions} onChange={v => onChange({ ...filters, difficulty: v as Difficulty | null })} />
+              <Select label="Effort" value={filters.effortLevel} options={effortOptions} onChange={v => onChange({ ...filters, effortLevel: v as EffortLevel | null })} />
+              <Select label="AI Policy" value={filters.aiPolicy} options={aiOptions} onChange={v => onChange({ ...filters, aiPolicy: v as AiPolicy | null })} />
+              <Select
+                label="Mode"
+                value={filters.mode}
+                options={[['remote', '🌐 Remote'], ['physical', '📍 Physical'], ['hybrid', '🔄 Hybrid']]}
+                onChange={v => onChange({ ...filters, mode: v as any })}
+              />
+              <Select
+                label="Credits Provided"
+                value={filters.creditsProvided ? 'yes' : ''}
+                options={[['yes', 'Yes']]}
+                onChange={v => onChange({ ...filters, creditsProvided: v === 'yes' })}
+              />
+              <Select
+                label="Status"
+                value={filters.status}
+                options={[['all', 'All'], ['ongoing', 'Ongoing'], ['ended', 'Ended']]}
+                onChange={v => onChange({ ...filters, status: (v || 'all') as any })}
+              />
+              <Select
+                label="Sort By"
+                value={filters.sortBy}
+                options={[['deadline', 'Deadline'], ['prize', 'Prize Pool'], ['rarity', 'ROI Score'], ['title', 'Name']]}
+                onChange={v => onChange({ ...filters, sortBy: (v || 'deadline') as any })}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

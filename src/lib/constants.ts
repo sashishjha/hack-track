@@ -190,8 +190,12 @@ export const DEFAULT_FILTER_STATE: FilterState = {
   competitionDensity: null,
   recurrenceCategory: null,
   careerOutcome: null,
+  creditsProvided: null,
+  status: 'all',
   sortBy: 'deadline',
   sortOrder: 'asc',
+  advancedMode: false,
+  advancedQuery: null,
 };
 
 // ─── STATUS COLORS ───

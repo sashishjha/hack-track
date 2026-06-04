@@ -1,5 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env'), override: true });
 
 function decodeJwtRole(jwt) {
   if (!jwt || typeof jwt !== 'string') return null;
@@ -18,9 +18,9 @@ function decodeJwtRole(jwt) {
 
 function resolveServiceRoleKey() {
   const candidates = [
+    'SUPABASE_SECRET_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
     'SUPABASE_SERVICE_KEY',
-    'SUPABASE_SECRET_KEY',
   ];
 
   for (const envVar of candidates) {
@@ -40,16 +40,34 @@ function resolveServiceRoleKey() {
   return null;
 }
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+function resolveBaseClientKey() {
+  const candidates = [
+    'SUPABASE_PUBLISHABLE_KEY',
+    'SUPABASE_KEY',
+  ];
+
+  for (const envVar of candidates) {
+    if (process.env[envVar]) {
+      return process.env[envVar];
+    }
+  }
+
+  const serviceRoleConfig = resolveServiceRoleKey();
+  return serviceRoleConfig?.key || null;
+}
+
+const baseClientKey = resolveBaseClientKey();
+
+if (!process.env.SUPABASE_URL || !baseClientKey) {
   throw new Error(
-    'Missing SUPABASE_URL or SUPABASE_KEY in .env file.\n' +
+    'Missing SUPABASE_URL or a Supabase key in .env file.\n' +
     'Ask the Master Agent for setup instructions.'
   );
 }
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  baseClientKey
 );
 
 const serviceRoleConfig = resolveServiceRoleKey();
@@ -68,4 +86,9 @@ module.exports = {
   supabaseAdmin,
   serviceRoleEnvVar: serviceRoleConfig?.envVar || null,
   serviceRoleKeyRole: serviceRoleConfig?.role || null,
+  baseClientEnvVar: process.env.SUPABASE_PUBLISHABLE_KEY
+    ? 'SUPABASE_PUBLISHABLE_KEY'
+    : process.env.SUPABASE_KEY
+      ? 'SUPABASE_KEY'
+      : serviceRoleConfig?.envVar || null,
 };

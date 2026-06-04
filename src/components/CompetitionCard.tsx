@@ -45,9 +45,10 @@ interface CompetitionCardProps {
   competition: Competition;
   isBookmarked?: (id: string) => boolean;
   onToggleBookmark?: (id: string) => void;
+  directLink?: boolean;
 }
 
-export function CompetitionCard({ competition: c, isBookmarked, onToggleBookmark }: CompetitionCardProps) {
+export function CompetitionCard({ competition: c, isBookmarked, onToggleBookmark, directLink }: CompetitionCardProps) {
   const platformInfo = PLATFORMS[c.platform] || PLATFORMS.other;
   const recColor = RECURRENCE_COLORS[c.recurrenceCategory] || '#6b7a99';
   const diffColor = DIFFICULTY_COLORS[c.difficulty] || '#6b7a99';
@@ -72,7 +73,22 @@ export function CompetitionCard({ competition: c, isBookmarked, onToggleBookmark
         <Star className={`h-3.5 w-3.5 ${bookmarked ? 'fill-[#f0c040] text-[#f0c040]' : ''}`} />
       </button>
 
-      <Link to="/competition/$slug" params={{ slug: c.slug }} className="block p-5 flex flex-col gap-3">
+      {(directLink || isGem) ? (
+        <a href={c.url} target="_blank" rel="noopener noreferrer" className="block p-5 flex flex-col gap-3 h-full">
+          <CardInner c={c} platformInfo={platformInfo} recColor={recColor} diffColor={diffColor} isGem={isGem} />
+        </a>
+      ) : (
+        <Link to="/competition/$slug" params={{ slug: c.slug }} className="block p-5 flex flex-col gap-3 h-full">
+          <CardInner c={c} platformInfo={platformInfo} recColor={recColor} diffColor={diffColor} isGem={isGem} />
+        </Link>
+      )}
+    </article>
+  );
+}
+
+function CardInner({ c, platformInfo, recColor, diffColor, isGem }: any) {
+  return (
+    <>
         {/* Top: badges */}
         <div className="flex flex-wrap gap-1.5 pr-8">
           <span
@@ -163,7 +179,6 @@ export function CompetitionCard({ competition: c, isBookmarked, onToggleBookmark
             Full Details →
           </span>
         </div>
-      </Link>
-    </article>
+    </>
   );
 }

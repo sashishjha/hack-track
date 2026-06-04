@@ -14,21 +14,20 @@ class KaggleAdapter extends BaseAdapter {
       rateLimit: 2000,
       maxPages: 2,
     });
-    this.apiUser = process.env.KAGGLE_USERNAME || '';
-    this.apiKey = process.env.KAGGLE_KEY || '';
+    this.apiToken = process.env.KAGGLE_API_TOKEN || '';
   }
 
   async fetch() {
     const headers = {};
-    if (this.apiUser && this.apiKey) {
-      headers.Authorization = 'Basic ' + Buffer.from(`${this.apiUser}:${this.apiKey}`).toString('base64');
+    if (this.apiToken) {
+      headers.Authorization = 'Bearer ' + this.apiToken;
     }
 
     const allComps = [];
     for (let page = 1; page <= this.maxPages; page++) {
       try {
         const resp = await this.httpGet(`${this.baseUrl}/api/v1/competitions/list`, {
-          params: { page, sortBy: 'deadline' },
+          params: { page },
           headers,
         });
         const comps = Array.isArray(resp.data) ? resp.data : [];

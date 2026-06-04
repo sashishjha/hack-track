@@ -1,6 +1,7 @@
 import type { Competition } from '@/lib/types';
 
-const API_BASE = 'http://localhost:5001/api';
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '') || '/api';
 
 type ApiCompetition = Partial<Competition> & {
   id: string;
@@ -90,12 +91,23 @@ export async function fetchCompetition(id: string) {
 }
 
 export async function triggerRefresh() {
-  const res = await fetch(`${API_BASE}/hackathons/refresh`, {
+  const res = await fetch(`${API_BASE}/hackathons/refresh-all`, {
     method: 'POST',
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to trigger refresh (${res.status})`);
+    let errorMessage = `Failed to trigger refresh (${res.status})`;
+
+    try {
+      const errorBody = await res.json() as { error?: string; message?: string };
+      if (errorBody?.error || errorBody?.message) {
+        errorMessage = errorBody.error || errorBody.message || errorMessage;
+      }
+    } catch {
+      // Ignore JSON parsing issues and keep the status-based message.
+    }
+
+    throw new Error(errorMessage);
   }
 
   return await res.json();

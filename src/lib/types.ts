@@ -172,6 +172,35 @@ export interface PlatformInfo {
   icon?: string;
 }
 
+// ─── Advanced Query Builder Types ───
+
+export type FilterOperator =
+  | '=='
+  | '!='
+  | 'contains'
+  | 'not_contains'
+  | '>'
+  | '<'
+  | 'is_true'
+  | 'is_false';
+
+export interface FilterRule {
+  id: string;
+  field: string;
+  operator: FilterOperator;
+  value: string | number | boolean;
+}
+
+export interface FilterGroup {
+  id: string;
+  combinator: 'AND' | 'OR';
+  rules: (FilterRule | FilterGroup)[];
+}
+
+export function isFilterGroup(r: FilterRule | FilterGroup): r is FilterGroup {
+  return 'combinator' in r;
+}
+
 export interface FilterState {
   search: string;
   platforms: string[];
@@ -183,8 +212,13 @@ export interface FilterState {
   competitionDensity: CompetitionDensity | null;
   recurrenceCategory: RecurrenceCategory | null;
   careerOutcome: CareerOutcome | null;
+  creditsProvided: boolean | null;
+  status: 'all' | 'ongoing' | 'ended';
   sortBy: 'deadline' | 'prize' | 'rarity' | 'freshness' | 'title';
   sortOrder: 'asc' | 'desc';
+  // Advanced mode
+  advancedMode: boolean;
+  advancedQuery: FilterGroup | null;
 }
 
 export interface PlatformStats {

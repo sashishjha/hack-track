@@ -58,7 +58,7 @@ function HomePage() {
               disabled={isRefreshing || loading}
               className="px-3 py-1 bg-[#1e2d45]/50 border border-[#1e2d45] rounded hover:border-[#00e5a0] text-[#00e5a0] text-[10px] font-mono uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {isRefreshing ? 'Syncing...' : 'Sync Data'}
+              {isRefreshing ? 'Refreshing...' : 'Refresh Everything'}
             </button>
           </div>
         </div>

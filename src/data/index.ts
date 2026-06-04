@@ -3,7 +3,8 @@ import { COMPETITIONS } from './competitions';
 import { COMPETITIONS_PART2 } from './competitions-part2';
 import { COMPETITIONS_PART3 } from './competitions-part3';
 import { COMPETITIONS_PART4 } from './competitions-part4';
-import type { Competition, PlatformStats, FilterState } from '../lib/types';
+import type { Competition, PlatformStats, FilterState, FilterRule, FilterGroup } from '../lib/types';
+import { isFilterGroup } from '../lib/types';
 
 // Merge all competition data into a single array
 export const ALL_COMPETITIONS: Competition[] = [
@@ -50,66 +51,100 @@ export function getStats(competitions: Competition[] = ALL_COMPETITIONS): Platfo
   };
 }
 
+// ─── Advanced Query Builder Evaluator ───
+
+function getFieldValue(c: Competition, field: string): any {
+  // Support nested paths like 'skillDomains', 'careerOutcomes', etc.
+  const map: Record<string, () => any> = {
+    title: () => c.title,
+    organizer: () => c.organizer ?? '',
+    description: () => c.description,
+    platform: () => c.platform,
+    status: () => c.status,
+    difficulty: () => c.difficulty,
+    mode: () => c.mode,
+    effortLevel: () => c.effortLevel,
+    aiPolicy: () => c.aiPolicy,
+    recurrenceCategory: () => c.recurrenceCategory,
+    competitionDensity: () => c.competitionDensity,
+    prizePoolUsd: () => c.prizePoolUsd ?? 0,
+    rarityScore: () => c.rarityScore ?? 0,
+    trustScore: () => c.trustScore ?? 0,
+    studentOnly: () => c.studentOnly,
+    apiCreditsIncluded: () => c.apiCreditsIncluded,
+    gpuCreditsIncluded: () => c.gpuCreditsIncluded,
+    teamSizeMin: () => c.teamSizeMin,
+    tags: () => (c.tags || []).join(' '),
+    skillDomains: () => (c.skillDomains || []).join(' '),
+    careerOutcomes: () => (c.careerOutcomes || []).join(' '),
+  };
+  return map[field] ? map[field]() : undefined;
+}
+
+function evaluateRule(c: Competition, rule: FilterRule): boolean {
+  const val = getFieldValue(c, rule.field);
+  const target = rule.value;
+  switch (rule.operator) {
+    case '==': return String(val).toLowerCase() === String(target).toLowerCase();
+    case '!=': return String(val).toLowerCase() !== String(target).toLowerCase();
+    case 'contains': return String(val).toLowerCase().includes(String(target).toLowerCase());
+    case 'not_contains': return !String(val).toLowerCase().includes(String(target).toLowerCase());
+    case '>': return Number(val) > Number(target);
+    case '<': return Number(val) < Number(target);
+    case 'is_true': return val === true;
+    case 'is_false': return val === false;
+    default: return true;
+  }
+}
+
+export function evaluateFilterGroup(c: Competition, group: FilterGroup): boolean {
+  if (!group.rules || group.rules.length === 0) return true;
+  if (group.combinator === 'AND') {
+    return group.rules.every(r => isFilterGroup(r) ? evaluateFilterGroup(c, r) : evaluateRule(c, r));
+  } else {
+    return group.rules.some(r => isFilterGroup(r) ? evaluateFilterGroup(c, r) : evaluateRule(c, r));
+  }
+}
+
 export function filterCompetitions(competitions: Competition[], filters: FilterState): Competition[] {
   let result = [...competitions];
 
-  // Search
-  if (filters.search) {
-    const q = filters.search.toLowerCase();
-    result = result.filter(c =>
-      c.title.toLowerCase().includes(q) ||
-      c.description.toLowerCase().includes(q) ||
-      c.tags.some(t => t.toLowerCase().includes(q)) ||
-      c.platform.toLowerCase().includes(q) ||
-      (c.organizer || '').toLowerCase().includes(q)
-    );
-  }
+  // ── Advanced mode: AST evaluator replaces all individual filters ──
+  if (filters.advancedMode && filters.advancedQuery) {
+    result = result.filter(c => evaluateFilterGroup(c, filters.advancedQuery!));
+  } else {
+    // Search
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(c =>
+        (c.title || '').toLowerCase().includes(q) ||
+        (c.description || '').toLowerCase().includes(q) ||
+        (c.tags || []).some(t => t.toLowerCase().includes(q)) ||
+        (c.platform || '').toLowerCase().includes(q) ||
+        (c.organizer || '').toLowerCase().includes(q)
+      );
+    }
 
-  // Platform filter
-  if (filters.platforms.length > 0) {
-    result = result.filter(c => filters.platforms.includes(c.platform));
-  }
+    if (filters.platforms.length > 0) result = result.filter(c => filters.platforms.includes(c.platform));
+    if (filters.skillDomains.length > 0) result = result.filter(c => filters.skillDomains.some(d => (c.skillDomains || []).includes(d)));
+    if (filters.difficulty) result = result.filter(c => c.difficulty === filters.difficulty);
+    if (filters.effortLevel) result = result.filter(c => c.effortLevel === filters.effortLevel);
+    if (filters.aiPolicy) result = result.filter(c => c.aiPolicy === filters.aiPolicy);
+    if (filters.mode) result = result.filter(c => c.mode === filters.mode);
+    if (filters.competitionDensity) result = result.filter(c => c.competitionDensity === filters.competitionDensity);
+    if (filters.recurrenceCategory) result = result.filter(c => c.recurrenceCategory === filters.recurrenceCategory);
+    if (filters.careerOutcome) result = result.filter(c => (c.careerOutcomes || []).includes(filters.careerOutcome!));
+    if (filters.creditsProvided) result = result.filter(c => c.apiCreditsIncluded || c.gpuCreditsIncluded);
 
-  // Skill domains
-  if (filters.skillDomains.length > 0) {
-    result = result.filter(c =>
-      filters.skillDomains.some(d => c.skillDomains.includes(d))
-    );
-  }
-
-  // Difficulty
-  if (filters.difficulty) {
-    result = result.filter(c => c.difficulty === filters.difficulty);
-  }
-
-  // Effort level
-  if (filters.effortLevel) {
-    result = result.filter(c => c.effortLevel === filters.effortLevel);
-  }
-
-  // AI policy
-  if (filters.aiPolicy) {
-    result = result.filter(c => c.aiPolicy === filters.aiPolicy);
-  }
-
-  // Mode
-  if (filters.mode) {
-    result = result.filter(c => c.mode === filters.mode);
-  }
-
-  // Competition density
-  if (filters.competitionDensity) {
-    result = result.filter(c => c.competitionDensity === filters.competitionDensity);
-  }
-
-  // Recurrence category
-  if (filters.recurrenceCategory) {
-    result = result.filter(c => c.recurrenceCategory === filters.recurrenceCategory);
-  }
-
-  // Career outcome
-  if (filters.careerOutcome) {
-    result = result.filter(c => c.careerOutcomes.includes(filters.careerOutcome!));
+    if (filters.status !== 'all') {
+      const now = new Date().getTime();
+      result = result.filter(c => {
+        const isEnded = c.submissionDeadline ? new Date(c.submissionDeadline).getTime() < now : false;
+        if (filters.status === 'ongoing') return !isEnded;
+        if (filters.status === 'ended') return isEnded;
+        return true;
+      });
+    }
   }
 
   // Sorting

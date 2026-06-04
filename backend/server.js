@@ -7,7 +7,7 @@ const KaggleAdapter = require('./adapters/kaggle');
 const DevfolioAdapter = require('./adapters/devfolio');
 const UnstopAdapter = require('./adapters/unstop');
 const MlhAdapter = require('./adapters/mlh');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env'), override: true });
 
 const app = express();
 const PORT = process.env.PORT || 5001;

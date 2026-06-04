@@ -15,7 +15,29 @@ export function useCompetitions() {
     fetchCompetitions()
       .then(data => {
         if (Array.isArray(data.hackathons) && data.hackathons.length > 0) {
-          setCompetitions(data.hackathons);
+          const staticMap = new Map(ALL_COMPETITIONS.map(c => [c.id, c]));
+          const staticUrlMap = new Map(ALL_COMPETITIONS.map(c => [c.url, c]));
+
+          const mergedApi = data.hackathons.map((apiComp: Competition) => {
+            const staticComp = staticMap.get(apiComp.id) || (apiComp.url ? staticUrlMap.get(apiComp.url) : null);
+            if (staticComp) {
+              return { 
+                ...staticComp,
+                ...apiComp, 
+                // Keep static metadata that adapters might miss
+                rarityScore: staticComp.rarityScore ?? apiComp.rarityScore,
+                trustScore: staticComp.trustScore ?? apiComp.trustScore,
+                tags: Array.from(new Set([...(staticComp.tags || []), ...(apiComp.tags || [])]))
+              };
+            }
+            return apiComp;
+          });
+
+          const apiIds = new Set(data.hackathons.map((c: Competition) => c.id));
+          const apiUrls = new Set(data.hackathons.map((c: Competition) => c.url).filter(Boolean));
+          const uniqueStatic = ALL_COMPETITIONS.filter(c => !apiIds.has(c.id) && !(c.url && apiUrls.has(c.url)));
+
+          setCompetitions([...uniqueStatic, ...mergedApi]);
           setSource('api');
           setError(null);
           return;
@@ -43,7 +65,7 @@ export function useCompetitions() {
       await triggerRefresh();
       loadData();
     } catch (err: any) {
-      setError(err.message || 'Failed to sync with sources');
+      setError(err.message || 'Failed to refresh all sources');
     } finally {
       setIsRefreshing(false);
     }

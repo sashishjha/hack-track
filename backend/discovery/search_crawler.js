@@ -1,81 +1,146 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+const { tavily } = require('@tavily/core');
 const { extractCompetitionData } = require('./llm_extractor');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env'), override: true });
 
-const KNOWN_DOMAINS = ['devpost.com', 'kaggle.com', 'hackerearth.com', 'unstop.com', 'devfolio.co', 'mlh.io', 'topcoder.com'];
+const KNOWN_DOMAINS = [
+  'devpost.com',
+  'kaggle.com',
+  'hackerearth.com',
+  'unstop.com',
+  'devfolio.co',
+  'mlh.io',
+  'topcoder.com',
+];
 
-async function searchDuckDuckGo(query) {
+const SEARCH_QUERIES = [
+  'new hackathon 2025',
+  'open hackathon registration 2025',
+  'hackathon with free API credits',
+  'hackathon providing free GPU compute',
+];
+const RATE_LIMIT_MS = 6500; // 6.5 seconds to respect 15 RPM free tier limit
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getTavilyClient() {
+  if (!process.env.TAVILY_API_KEY) {
+    console.warn('⚠️ TAVILY_API_KEY not set in .env. Skipping Tavily discovery.');
+    return null;
+  }
+
+  return tavily({ apiKey: process.env.TAVILY_API_KEY });
+}
+
+function normalizeUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return null;
+  }
+
+  const trimmed = url.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+}
+
+function isKnownDomain(url) {
+  return KNOWN_DOMAINS.some(domain => url.includes(domain));
+}
+
+function getHostname(url) {
   try {
-    console.log(`🔍 Searching DuckDuckGo for: "${query}"`);
-    const response = await axios.get('https://html.duckduckgo.com/html/', {
-      params: { q: query },
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
-    });
-    
-    const $ = cheerio.load(response.data);
-    const results = [];
-    
-    $('.result__url').each((i, el) => {
-      const url = $(el).text().trim();
-      if (url && url.startsWith('http')) {
-        results.push(url);
-      } else if (url) {
-        results.push('https://' + url);
-      }
-    });
-    
-    return results;
-  } catch (err) {
-    console.error('❌ DuckDuckGo search failed:', err.message);
-    return [];
+    return new URL(url).hostname;
+  } catch {
+    return null;
   }
 }
 
-async function discoverNewHackathons() {
-  console.log('\n🚀 Starting Free Web Discovery Engine...');
-  
-  // Search query targeting new/unlisted hackathons
-  const query = '"hackathon 2026" registration OR prizes';
-  const urls = await searchDuckDuckGo(query);
-  
-  // Filter out known domains
-  const newUrls = urls.filter(url => {
-    return !KNOWN_DOMAINS.some(domain => url.includes(domain));
-  }).slice(0, 3); // Process only top 3 to keep it lightweight
-  
-  console.log(`📌 Found ${newUrls.length} potentially new hackathon URLs.`);
-  
-  const discoveredHackathons = [];
-  
-  for (const url of newUrls) {
+async function searchHackathonUrls(tvly) {
+  const discoveredUrls = [];
+
+  for (const query of SEARCH_QUERIES) {
     try {
-      console.log(`📥 Fetching content from: ${url}`);
-      const pageRes = await axios.get(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 10000
+      console.log(`🔍 Searching Tavily for: "${query}"`);
+      const response = await tvly.search(query, {
+        searchDepth: 'advanced',
+        maxResults: 10,
+        topic: 'general',
       });
-      
-      const $ = cheerio.load(pageRes.data);
-      // Clean up DOM before text extraction
-      $('script, style, nav, footer, header').remove();
-      const textContent = $('body').text();
-      
-      console.log(`🤖 Passing content to Gemini LLM for extraction...`);
+
+      const urls = (response.results || [])
+        .map(result => normalizeUrl(result.url))
+        .filter(Boolean);
+
+      discoveredUrls.push(...urls);
+    } catch (err) {
+      console.error(`❌ Tavily search failed for "${query}": ${err.message}`);
+    }
+
+    await sleep(RATE_LIMIT_MS);
+  }
+
+  return [...new Set(discoveredUrls)].filter(url => !isKnownDomain(url));
+}
+
+async function extractCleanText(tvly, url) {
+  const response = await tvly.extract([url], {
+    extractDepth: 'advanced',
+    format: 'text',
+  });
+
+  const extractedResult = (response.results || []).find(result => result.url === url) || response.results?.[0];
+  return extractedResult?.rawContent || null;
+}
+
+async function discoverNewHackathons() {
+  console.log('\n🚀 Starting Tavily Discovery Engine...');
+
+  const tvly = getTavilyClient();
+  if (!tvly) {
+    const emptyResults = [];
+    emptyResults.summary = { found: 0, verified: 0, newSources: 0 };
+    return emptyResults;
+  }
+
+  const urls = await searchHackathonUrls(tvly);
+  console.log(`📌 Found ${urls.length} potentially new hackathon URLs.`);
+
+  const discoveredHackathons = [];
+
+  for (const url of urls) {
+    try {
+      console.log(`📥 Extracting clean content from: ${url}`);
+      const textContent = await extractCleanText(tvly, url);
+
+      if (!textContent) {
+        console.warn(`⚠️ No extractable content returned for ${url}`);
+        await sleep(RATE_LIMIT_MS);
+        continue;
+      }
+
+      console.log('🤖 Passing content to Gemini LLM for extraction...');
       const competition = await extractCompetitionData(textContent, url);
-      
+
       if (competition && competition.title) {
         console.log(`✅ Discovered: ${competition.title}`);
         discoveredHackathons.push(competition);
       }
     } catch (err) {
-      console.error(`⚠️ Could not scrape ${url}: ${err.message}`);
+      console.error(`⚠️ Tavily extract failed for ${url}: ${err.message}`);
     }
+
+    await sleep(RATE_LIMIT_MS);
   }
-  
+
+  discoveredHackathons.summary = {
+    found: urls.length,
+    verified: discoveredHackathons.length,
+    newSources: new Set(discoveredHackathons.map(comp => getHostname(comp.url)).filter(Boolean)).size,
+  };
+
   console.log(`🎉 Web Discovery completed. Extracted ${discoveredHackathons.length} new competitions.`);
   return discoveredHackathons;
 }
