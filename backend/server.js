@@ -68,11 +68,21 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 HackTrack API server running on http://localhost:${PORT}`);
   console.log(`📊 API: http://localhost:${PORT}/api/hackathons`);
   console.log(`🔍 Discovery: POST http://localhost:${PORT}/api/discover`);
   console.log('🕸️ Adapter refresh platforms:', app.locals.adapterFactories.length);
+});
+
+server.on('error', err => {
+  if (err && err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Another backend instance is likely running.`);
+    console.error('Stop the existing process or change PORT before starting a new one.');
+    process.exit(0);
+  }
+
+  throw err;
 });
 
 module.exports = app;

@@ -13,8 +13,8 @@ const KNOWN_DOMAINS = [
 ];
 
 const SEARCH_QUERIES = [
-  'new hackathon 2025',
-  'open hackathon registration 2025',
+  'new hackathon 2026',
+  'open hackathon registration 2026',
   'hackathon with free API credits',
   'hackathon providing free GPU compute',
 ];
