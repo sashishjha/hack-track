@@ -1,4 +1,5 @@
 const { tavily } = require('@tavily/core');
+const { supabase, supabaseAdmin } = require('../db/supabase');
 const { extractCompetitionData } = require('./llm_extractor');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env'), override: true });
 
@@ -19,6 +20,8 @@ const SEARCH_QUERIES = [
   'hackathon providing free GPU compute',
 ];
 const RATE_LIMIT_MS = 6500; // 6.5 seconds to respect 15 RPM free tier limit
+const writeClient = supabaseAdmin || supabase;
+const SUPABASE_BATCH_SIZE = 200;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -56,6 +59,31 @@ function getHostname(url) {
   } catch {
     return null;
   }
+}
+
+async function loadExistingUrls(urls) {
+  const existingUrls = new Set();
+  const uniqueUrls = [...new Set(urls)].filter(Boolean);
+
+  for (let index = 0; index < uniqueUrls.length; index += SUPABASE_BATCH_SIZE) {
+    const batch = uniqueUrls.slice(index, index + SUPABASE_BATCH_SIZE);
+    const { data, error } = await writeClient
+      .from('competitions')
+      .select('url')
+      .in('url', batch);
+
+    if (error) {
+      throw new Error(`Failed to load existing competition URLs: ${error.message}`);
+    }
+
+    for (const row of data || []) {
+      if (row?.url) {
+        existingUrls.add(row.url);
+      }
+    }
+  }
+
+  return existingUrls;
 }
 
 async function searchHackathonUrls(tvly) {
@@ -108,9 +136,22 @@ async function discoverNewHackathons() {
   const urls = await searchHackathonUrls(tvly);
   console.log(`📌 Found ${urls.length} potentially new hackathon URLs.`);
 
+  let existingUrls = new Set();
+  try {
+    existingUrls = await loadExistingUrls(urls);
+    if (existingUrls.size > 0) {
+      console.log(`🗂️ Skipping ${existingUrls.size} URLs already in the database.`);
+    }
+  } catch (err) {
+    console.error(`⚠️ Could not check existing competition URLs: ${err.message}`);
+  }
+
+  const newUrls = urls.filter(url => !existingUrls.has(url));
+  console.log(`🆕 ${newUrls.length} URLs remain after database dedupe.`);
+
   const discoveredHackathons = [];
 
-  for (const url of urls) {
+  for (const url of newUrls) {
     try {
       console.log(`📥 Extracting clean content from: ${url}`);
       const textContent = await extractCleanText(tvly, url);
@@ -137,6 +178,8 @@ async function discoverNewHackathons() {
 
   discoveredHackathons.summary = {
     found: urls.length,
+    skippedExisting: existingUrls.size,
+    queuedForGemini: newUrls.length,
     verified: discoveredHackathons.length,
     newSources: new Set(discoveredHackathons.map(comp => getHostname(comp.url)).filter(Boolean)).size,
   };

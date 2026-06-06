@@ -3,15 +3,60 @@ const { supabase, supabaseAdmin } = require('../db/supabase');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env'), override: true });
 
 // ─── Gemini Client Setup ───
-const API_KEY = process.env.GEMINI_API_KEY || '';
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+const GEMINI_KEYS = [1, 2, 3, 4, 5]
+  .map(index => process.env[`GEMINI_API_KEY_${index}`] || '')
+  .filter(Boolean);
+const LEGACY_GEMINI_KEY = process.env.GEMINI_API_KEY || '';
+if (!GEMINI_KEYS.length && LEGACY_GEMINI_KEY) {
+  GEMINI_KEYS.push(LEGACY_GEMINI_KEY);
+}
+const GEMINI_CLIENTS = GEMINI_KEYS.map(apiKey => new GoogleGenerativeAI(apiKey));
 const writeClient = supabaseAdmin || supabase;
 
 // Model fallback chain: try newer models first, fall back to older ones
 const MODEL_CHAIN = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
-// Track if we've already logged a key validation failure this session
-let keyValidated = null; // null = untested, true = works, false = broken
+// Track which Gemini key we should try next.
+let activeKeyIndex = 0;
+
+function resetGeminiKeyRotation() {
+  activeKeyIndex = 0;
+}
+
+function getActiveClient() {
+  if (!GEMINI_CLIENTS.length) {
+    return null;
+  }
+
+  if (activeKeyIndex < 0 || activeKeyIndex >= GEMINI_CLIENTS.length) {
+    activeKeyIndex = 0;
+  }
+
+  return GEMINI_CLIENTS[activeKeyIndex];
+}
+
+function advanceGeminiKey() {
+  if (!GEMINI_CLIENTS.length) {
+    return null;
+  }
+
+  activeKeyIndex += 1;
+  if (activeKeyIndex >= GEMINI_CLIENTS.length) {
+    return null;
+  }
+
+  return GEMINI_CLIENTS[activeKeyIndex];
+}
+
+function isQuotaError(err) {
+  const msg = err?.message || '';
+  return /quota|rate limit|RESOURCE_EXHAUSTED|429/i.test(msg);
+}
+
+function isInvalidKeyError(err) {
+  const msg = err?.message || '';
+  return msg.includes('API_KEY_INVALID') || msg.includes('API Key not found') || /invalid api key|permission denied/i.test(msg);
+}
 
 function slugify(value) {
   return String(value || '')
@@ -64,82 +109,63 @@ async function persistDiscoveredCompetition(competition) {
   }
 }
 
-/**
- * Validate the Gemini API key with a minimal test call.
- * Only runs once per server lifecycle to avoid repeated failures.
- */
 async function validateApiKey() {
-  if (keyValidated !== null) return keyValidated;
-  if (!genAI) {
-    keyValidated = false;
+  if (!GEMINI_CLIENTS.length) {
     return false;
   }
 
-  for (const modelName of MODEL_CHAIN) {
-    try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      await model.generateContent('test');
-      console.log(`✅ Gemini API key validated successfully (model: ${modelName})`);
-      keyValidated = true;
-      return true;
-    } catch (err) {
-      const msg = err.message || '';
-      if (msg.includes('API_KEY_INVALID') || msg.includes('API Key not found')) {
-        console.error('');
-        console.error('╔══════════════════════════════════════════════════════════════╗');
-        console.error('║  ❌ GEMINI API KEY IS INVALID OR REVOKED                    ║');
-        console.error('║                                                              ║');
-        console.error('║  Your GEMINI_API_KEY in .env is being rejected by Google.    ║');
-        console.error('║                                                              ║');
-        console.error('║  To fix:                                                     ║');
-        console.error('║  1. Go to https://aistudio.google.com/apikey                 ║');
-        console.error('║  2. Create a new API key (starts with "AIza...")              ║');
-        console.error('║  3. Update GEMINI_API_KEY in your .env file                  ║');
-        console.error('║  4. Restart the server                                       ║');
-        console.error('║                                                              ║');
-        console.error(`║  Key used: ${API_KEY.substring(0,10)}...${API_KEY.substring(API_KEY.length-4)}  ║`);
-        console.error('╚══════════════════════════════════════════════════════════════╝');
-        console.error('');
-        keyValidated = false;
-        return false;
-      }
-      // Model not available, try next in chain
-      continue;
-    }
-  }
-
-  console.warn('⚠️ All Gemini models failed. LLM extraction will be skipped.');
-  keyValidated = false;
-  return false;
+  return true;
 }
 
 /**
  * Try generating content with a model fallback chain.
  */
 async function generateWithFallback(prompt) {
-  for (const modelName of MODEL_CHAIN) {
-    try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(prompt);
-      return result.response.text();
-    } catch (err) {
-      const msg = err.message || '';
-      // If key is invalid, stop immediately — no point trying other models
-      if (msg.includes('API_KEY_INVALID') || msg.includes('API Key not found')) {
-        throw err;
-      }
-      // Model-specific error (quota, not found), try next
-      console.warn(`⚠️ ${modelName} failed: ${msg}. Trying next model...`);
-      continue;
-    }
+  if (!GEMINI_CLIENTS.length) {
+    throw new Error('No Gemini API keys configured');
   }
-  throw new Error('All Gemini models failed');
+
+  const startIndex = activeKeyIndex;
+
+  while (activeKeyIndex < GEMINI_CLIENTS.length) {
+    const client = getActiveClient();
+
+    for (const modelName of MODEL_CHAIN) {
+      try {
+        const model = client.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      } catch (err) {
+        const msg = err.message || '';
+        if (isInvalidKeyError(err) || isQuotaError(err)) {
+          break;
+        }
+        console.warn(`⚠️ ${modelName} failed for key ${activeKeyIndex + 1}: ${msg}. Trying next model...`);
+      }
+    }
+
+    const failedKeyNumber = activeKeyIndex + 1;
+    const nextClient = advanceGeminiKey();
+    if (!nextClient) {
+      break;
+    }
+    console.warn(`⚠️ Gemini key ${failedKeyNumber} exhausted or invalid. Switching to key ${activeKeyIndex + 1}...`);
+  }
+
+  activeKeyIndex = startIndex;
+  throw new Error('All Gemini API keys failed');
+}
+
+function logMissingKeysOnce() {
+  if (!GEMINI_KEYS.length) {
+    console.warn('⚠️ No GEMINI_API_KEY_1..5 values set in .env. Skipping LLM extraction.');
+  }
 }
 
 async function extractCompetitionData(htmlContent, sourceUrl) {
   // Check 1: Is the key even set?
-  if (!API_KEY) {
-    console.warn('⚠️ GEMINI_API_KEY not set in .env. Skipping LLM extraction.');
+  if (!GEMINI_KEYS.length) {
+    logMissingKeysOnce();
     return null;
   }
 
@@ -199,9 +225,11 @@ async function extractCompetitionData(htmlContent, sourceUrl) {
   } catch (err) {
     const msg = err.message || '';
     if (msg.includes('API_KEY_INVALID') || msg.includes('API Key not found')) {
-      // Mark key as broken so we don't retry for every URL
-      keyValidated = false;
+      advanceGeminiKey();
       console.error('🔑 Gemini API key invalid — skipping all remaining LLM extractions this session.');
+    } else if (isQuotaError(err)) {
+      console.warn('⚠️ Gemini quota reached — rotating to next key.');
+      advanceGeminiKey();
     } else {
       console.error(`❌ LLM extraction failed for ${sourceUrl}: ${msg}`);
     }
@@ -209,4 +237,4 @@ async function extractCompetitionData(htmlContent, sourceUrl) {
   }
 }
 
-module.exports = { extractCompetitionData, validateApiKey };
+module.exports = { extractCompetitionData, validateApiKey, resetGeminiKeyRotation };

@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const router = express.Router();
 const { supabase, supabaseAdmin } = require('../db/supabase');
 const { discoverNewHackathons } = require('../discovery/search_crawler');
+const { resetGeminiKeyRotation } = require('../discovery/llm_extractor');
 
 const writeClient = supabaseAdmin || supabase;
 const SUPABASE_BATCH_SIZE = 200;
@@ -309,6 +310,7 @@ router.post('/refresh', async (req, res) => {
 router.post('/refresh-all', async (req, res) => {
   try {
     const adapterFactories = req.app?.locals?.adapterFactories || [];
+    resetGeminiKeyRotation();
     const refreshResult = await refreshAdapters(adapterFactories);
     const discoveredHackathons = await discoverNewHackathons();
 
