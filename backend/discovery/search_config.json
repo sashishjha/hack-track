@@ -1,0 +1,27 @@
+{
+  "seedQueryCap": 12,
+  "searchQueryCap": 16,
+  "enableGeminiExpansion": true,
+  "sources": [
+    "site:devpost.com",
+    "site:devfolio.co",
+    "site:unstop.com",
+    "site:mlh.io",
+    "site:hackerearth.com",
+    "site:kaggle.com"
+  ],
+  "themes": [
+    "hackathon",
+    "hackathon open registration",
+    "hackathon upcoming",
+    "student hackathon",
+    "global hackathon",
+    "virtual hackathon",
+    "AI hackathon",
+    "developer challenge",
+    "innovation challenge",
+    "hackathon prize",
+    "hackathon API credits",
+    "hackathon GPU credits"
+  ]
+}
