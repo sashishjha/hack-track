@@ -43,7 +43,7 @@ const DEFAULT_SEARCH_THEMES = [
 const DEFAULT_SEED_QUERY_CAP = 12;
 const DEFAULT_SEARCH_QUERY_CAP = 16;
 const SEARCH_CONFIG_PATH = path.resolve(__dirname, 'search_config.json');
-const GEMINI_MODEL_CHAIN = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+const GEMINI_MODEL_CHAIN = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_VARIANTS = [CURRENT_YEAR - 1, CURRENT_YEAR, CURRENT_YEAR + 1];
 const RATE_LIMIT_MS = 6500; // 6.5 seconds to respect 15 RPM free tier limit
@@ -357,6 +357,7 @@ Rules:
 
   for (let clientIndex = startIndex; clientIndex < clients.length; clientIndex += 1) {
     const client = clients[clientIndex];
+    let shouldAdvanceKey = false;
 
     for (const modelName of GEMINI_MODEL_CHAIN) {
       try {
@@ -369,11 +370,20 @@ Rules:
         }
       } catch (err) {
         const msg = err?.message || '';
-        if (/quota|rate limit|RESOURCE_EXHAUSTED|429|invalid api key|API_KEY_INVALID|API Key not found|permission denied/i.test(msg)) {
+        if (/invalid api key|API_KEY_INVALID|API Key not found/i.test(msg)) {
+          shouldAdvanceKey = true;
           break;
+        }
+        if (/quota|rate limit|RESOURCE_EXHAUSTED|429|503|service unavailable|high demand|temporarily unavailable|permission denied|model not found|not found|unavailable/i.test(msg)) {
+          console.warn(`⚠️ Gemini query expansion failed with ${modelName}: ${msg}`);
+          continue;
         }
         console.warn(`⚠️ Gemini query expansion failed with ${modelName}: ${msg}`);
       }
+    }
+
+    if (shouldAdvanceKey) {
+      continue;
     }
   }
 

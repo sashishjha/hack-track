@@ -13,8 +13,8 @@ if (!GEMINI_KEYS.length && LEGACY_GEMINI_KEY) {
 const GEMINI_CLIENTS = GEMINI_KEYS.map(apiKey => new GoogleGenerativeAI(apiKey));
 const writeClient = supabaseAdmin || supabase;
 
-// Model fallback chain: try newer models first, fall back to older ones
-const MODEL_CHAIN = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+// Model fallback chain: try current stable models first, then lighter variants.
+const MODEL_CHAIN = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 
 // Track which Gemini key we should try next.
 let activeKeyIndex = 0;
@@ -55,7 +55,7 @@ function isQuotaError(err) {
 
 function isInvalidKeyError(err) {
   const msg = err?.message || '';
-  return msg.includes('API_KEY_INVALID') || msg.includes('API Key not found') || /invalid api key|permission denied/i.test(msg);
+  return msg.includes('API_KEY_INVALID') || msg.includes('API Key not found') || /invalid api key/i.test(msg);
 }
 
 function slugify(value) {
@@ -129,6 +129,7 @@ async function generateWithFallback(prompt) {
 
   while (activeKeyIndex < GEMINI_CLIENTS.length) {
     const client = getActiveClient();
+    let shouldAdvanceKey = false;
 
     for (const modelName of MODEL_CHAIN) {
       try {
@@ -137,11 +138,26 @@ async function generateWithFallback(prompt) {
         return result.response.text();
       } catch (err) {
         const msg = err.message || '';
-        if (isInvalidKeyError(err) || isQuotaError(err)) {
+        if (isInvalidKeyError(err)) {
+          shouldAdvanceKey = true;
           break;
+        }
+        if (isQuotaError(err) || /503|service unavailable|high demand|temporarily unavailable|permission denied|model not found|not found|unavailable/i.test(msg)) {
+          console.warn(`⚠️ ${modelName} failed for key ${activeKeyIndex + 1}: ${msg}. Trying next model...`);
+          continue;
         }
         console.warn(`⚠️ ${modelName} failed for key ${activeKeyIndex + 1}: ${msg}. Trying next model...`);
       }
+    }
+
+    if (shouldAdvanceKey) {
+      const failedKeyNumber = activeKeyIndex + 1;
+      const nextClient = advanceGeminiKey();
+      if (!nextClient) {
+        break;
+      }
+      console.warn(`⚠️ Gemini key ${failedKeyNumber} is invalid. Switching to key ${activeKeyIndex + 1}...`);
+      continue;
     }
 
     const failedKeyNumber = activeKeyIndex + 1;
@@ -224,10 +240,10 @@ async function extractCompetitionData(htmlContent, sourceUrl) {
     return parsed;
   } catch (err) {
     const msg = err.message || '';
-    if (msg.includes('API_KEY_INVALID') || msg.includes('API Key not found')) {
+    if (msg.includes('API_KEY_INVALID') || msg.includes('API Key not found') || /invalid api key/i.test(msg)) {
       advanceGeminiKey();
       console.error('🔑 Gemini API key invalid — skipping all remaining LLM extractions this session.');
-    } else if (isQuotaError(err)) {
+    } else if (isQuotaError(err) || /503|service unavailable|high demand|temporarily unavailable|permission denied|model not found|not found|unavailable/i.test(msg)) {
       console.warn('⚠️ Gemini quota reached — rotating to next key.');
       advanceGeminiKey();
     } else {
